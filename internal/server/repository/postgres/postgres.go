@@ -2,26 +2,6 @@ package postgres
 
 import (
 	"context"
-	"fmt"
-
-	"github.com/LekcRg/GophKeeper/internal/config"
-	"github.com/LekcRg/GophKeeper/internal/server/repository"
-	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/jackc/pgx/v5/stdlib"
-	"github.com/jmoiron/sqlx"
-	"go.uber.org/zap"
-)
-
-const PostgresDriver = "pgx"
-
-type postgres struct {
-	db *sqlx.DB
-}
-
-package postgres
-
-import (
-	"context"
 	"database/sql"
 	"fmt"
 
@@ -60,6 +40,7 @@ func New(
 	}
 
 	log.Info("Success connect to postgres db")
+
 	pg.db = db
 
 	return &repository.Repository{
