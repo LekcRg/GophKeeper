@@ -11,6 +11,7 @@ import (
 	"github.com/LekcRg/GophKeeper/internal/logger"
 	"github.com/LekcRg/GophKeeper/internal/server/api"
 	"github.com/LekcRg/GophKeeper/internal/server/api/handlers"
+	"github.com/LekcRg/GophKeeper/internal/server/api/middlewares"
 	"github.com/LekcRg/GophKeeper/internal/server/service"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
@@ -53,8 +54,9 @@ func NewServerApp() (*Server, error) {
 func (s *Server) createRouter() *chi.Mux {
 	svc := service.New()
 	handl := handlers.New(s.Config, svc, s.Log)
+	middl := middlewares.New(s.Log)
 
-	return api.New(handl)
+	return api.New(handl, middl)
 }
 
 func (s *Server) createHTTP() *http.Server {
