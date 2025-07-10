@@ -17,7 +17,6 @@ func New(h *handlers.Handlers, m *middlewares.Middlewares) *chi.Mux {
 
 	r.Route("/user", func(cr chi.Router) {
 		cr.Post("/create", h.UserHandlers.CreateUser)
-		cr.Post("/test", h.UserHandlers.Test)
 	})
 
 	return r

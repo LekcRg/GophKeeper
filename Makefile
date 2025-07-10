@@ -18,3 +18,6 @@ build-server:
 
 lint:
 	golangci-lint run
+
+betteralign:
+	betteralign -apply -test_files ./...

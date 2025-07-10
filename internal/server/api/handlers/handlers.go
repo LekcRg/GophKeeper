@@ -10,13 +10,10 @@ type Handlers struct {
 	UserHandlers *UserHandlers
 }
 
-type NewHandlersArgs struct {
-	Config      *config.Config
-	UserService UserService
-}
-
 func New(cfg *config.Config, svc *service.Service, log *zap.Logger) *Handlers {
+	errs := &Responder{log}
+
 	return &Handlers{
-		UserHandlers: NewUserHandlers(cfg, svc.UserService, log),
+		UserHandlers: NewUserHandlers(cfg, svc.UserService, log, errs),
 	}
 }

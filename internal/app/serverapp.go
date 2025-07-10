@@ -41,26 +41,37 @@ func NewServerApp(ctx context.Context) (*Server, error) {
 		return nil, ErrLoggerIsNil
 	}
 
-	log.Info("Got config", zap.Any("config", cfg))
+	server := &Server{
+		Log:    log,
+		Config: cfg,
+	}
+
+	server.printConfig()
 
 	db, err := postgres.New(ctx, &cfg.Postgres, log)
 	if err != nil {
 		return nil, err
 	}
 
-	server := &Server{
-		Log:    log,
-		Config: cfg,
-		db:     db,
-	}
+	server.db = db
 
 	server.http = server.createHTTP()
 
 	return server, nil
 }
 
+func (s *Server) printConfig() {
+	const redacted = "[REDACTED]"
+
+	cfg := *s.Config
+	cfg.Postgres.Password = redacted
+	cfg.Auth.Secret = redacted
+
+	s.Log.Info("Got config", zap.Any("config", cfg))
+}
+
 func (s *Server) createRouter() *chi.Mux {
-	svc := service.New(s.db)
+	svc := service.New(s.db, s.Config)
 	handl := handlers.New(s.Config, svc, s.Log)
 	middl := middlewares.New(s.Log)
 

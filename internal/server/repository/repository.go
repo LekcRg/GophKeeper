@@ -11,8 +11,7 @@ type DB interface {
 }
 
 type UserRepo interface {
-	CreateUser(ctx context.Context, user models.CreateUserReq) (models.User, error)
-	Test(ctx context.Context, message string) error
+	CreateUser(ctx context.Context, user models.RegisterUserReq) error
 }
 
 type Repository struct {

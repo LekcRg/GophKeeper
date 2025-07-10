@@ -3,27 +3,31 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"io"
+	"errors"
 	"net/http"
 
 	"github.com/LekcRg/GophKeeper/internal/config"
+	"github.com/LekcRg/GophKeeper/internal/errs"
 	"github.com/LekcRg/GophKeeper/internal/models"
 	"go.uber.org/zap"
 )
 
 type UserService interface {
-	CreateUser(ctx context.Context) error
-	Test(ctx context.Context, message string) error
+	Register(ctx context.Context, req models.RegisterUserReq) (models.RegisterUserRes, error)
 }
 
 type UserHandlers struct {
+	resp    *Responder
 	service UserService
 	config  *config.Config
 	log     *zap.Logger
 }
 
-func NewUserHandlers(cfg *config.Config, service UserService, log *zap.Logger) *UserHandlers {
+func NewUserHandlers(
+	cfg *config.Config, service UserService, log *zap.Logger, resp *Responder,
+) *UserHandlers {
 	return &UserHandlers{
+		resp:    resp,
 		service: service,
 		config:  cfg,
 		log:     log,
@@ -31,7 +35,7 @@ func NewUserHandlers(cfg *config.Config, service UserService, log *zap.Logger) *
 }
 
 func (uh *UserHandlers) CreateUser(w http.ResponseWriter, r *http.Request) {
-	var reqBody models.CreateUserReq
+	var reqBody models.RegisterUserReq
 
 	err := json.NewDecoder(r.Body).Decode(&reqBody)
 	if err != nil {
@@ -39,55 +43,23 @@ func (uh *UserHandlers) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-
-	uh.log.Info("Body", zap.Any("CreateUser", reqBody))
-	uh.log.Info("", zap.String("Content-Type", r.Header.Get("Content-Type")))
-
 	defer r.Body.Close()
 
-	w.WriteHeader(http.StatusOK)
-
-	_, err = io.WriteString(w, "Hello from user handler")
+	res, err := uh.service.Register(r.Context(), reqBody)
 	if err != nil {
-		uh.log.Error("CreateUser error", zap.Error(err))
-	}
-}
+		if errors.Is(err, errs.ErrLoginAlreadyExists) {
+			uh.resp.JSON(w, http.StatusConflict, models.RegisterUserError{
+				Login: "login already exists",
+			})
 
-func (uh *UserHandlers) Test(w http.ResponseWriter, r *http.Request) {
-	var body struct {
-		Test string `json:"test"`
-	}
+			return
+		}
 
-	err := json.NewDecoder(r.Body).Decode(&body)
-	if err != nil {
-		uh.log.Error("Json decode error", zap.Error(err))
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-
-		return
-	}
-
-	uh.log.Info(body.Test)
-
-	defer r.Body.Close()
-
-	res, err := json.Marshal(map[string]string{
-		"status": "ok",
-	})
-	if err != nil {
-		uh.log.Error("Json marshal error", zap.Error(err))
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-
-		return
-	}
-
-	err = uh.service.Test(r.Context(), body.Test)
-	if err != nil {
 		uh.log.Error("UserService error", zap.Error(err))
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		uh.resp.InternalError(w)
 
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	w.Write(res)
+	uh.resp.JSON(w, http.StatusOK, res)
 }

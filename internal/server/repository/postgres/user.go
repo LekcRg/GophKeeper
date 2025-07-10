@@ -18,18 +18,11 @@ func NewUserRepo(db *sqlx.DB) *UserRepo {
 }
 
 func (ur *UserRepo) CreateUser(
-	_ context.Context, _ models.CreateUserReq,
-) (models.User, error) {
-	return models.User{}, nil
-}
+	ctx context.Context, reqUser models.RegisterUserReq,
+) error {
+	query := "INSERT INTO users (login, passhash) VALUES (:login, :passhash)"
 
-type Msg struct {
-	ID      int    `db:"id"`
-	Message string `db:"test"`
-}
-
-func (ur *UserRepo) Test(ctx context.Context, message string) error {
-	_, err := ur.db.ExecContext(ctx, "INSERT INTO test (test) VALUES($1);", message)
+	_, err := ur.db.NamedExecContext(ctx, query, reqUser)
 	if err != nil {
 		return err
 	}

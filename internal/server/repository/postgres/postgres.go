@@ -13,12 +13,12 @@ import (
 	"go.uber.org/zap"
 )
 
-const PostgresDriver = "pgx"
-
 type postgres struct {
 	db     *sqlx.DB
 	config *config.Postgres
 }
+
+const PostgresDriver = "pgx"
 
 func New(
 	ctx context.Context, cfg *config.Postgres, log *zap.Logger,
