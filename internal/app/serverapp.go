@@ -1,0 +1,106 @@
+package app
+
+import (
+	"context"
+	"errors"
+	"net/http"
+	"os"
+	"time"
+
+	"github.com/LekcRg/GophKeeper/internal/config"
+	"github.com/LekcRg/GophKeeper/internal/logger"
+	"github.com/LekcRg/GophKeeper/internal/server/api"
+	"github.com/LekcRg/GophKeeper/internal/server/api/handlers"
+	"github.com/LekcRg/GophKeeper/internal/server/service"
+	"github.com/go-chi/chi/v5"
+	"go.uber.org/zap"
+)
+
+type Server struct {
+	Log    *zap.Logger
+	Config *config.Config
+	http   *http.Server
+}
+
+var ErrLoggerIsNil = errors.New("logger is nil")
+
+func NewServerApp() (*Server, error) {
+	cfg, err := config.GetConfig(os.Args[1:])
+	if err != nil || cfg == nil {
+		return nil, err
+	}
+
+	log, err := logger.CreateLogger(cfg)
+
+	if err != nil {
+		return nil, err
+	} else if log == nil {
+		return nil, ErrLoggerIsNil
+	}
+
+	log.Info("Got config", zap.Any("config", cfg))
+
+	server := &Server{
+		Log:    log,
+		Config: cfg,
+	}
+
+	server.http = server.createHTTP()
+
+	return server, nil
+}
+
+func (s *Server) createRouter() *chi.Mux {
+	svc := service.New()
+	handl := handlers.New(s.Config, svc, s.Log)
+
+	return api.New(handl)
+}
+
+func (s *Server) createHTTP() *http.Server {
+	const (
+		readTimeout       = 5 * time.Second
+		writeTimeout      = 10 * time.Second
+		readHeaderTimeout = 5 * time.Second
+		idleTimeout       = 60 * time.Second
+	)
+
+	return &http.Server{
+		Addr:              s.Config.Addr,
+		Handler:           s.createRouter(),
+		ReadTimeout:       readTimeout,
+		WriteTimeout:      writeTimeout,
+		ReadHeaderTimeout: readHeaderTimeout,
+		IdleTimeout:       idleTimeout,
+	}
+}
+
+func (s *Server) startHTTPServer() error {
+	s.Log.Info("Starting HTTP server", zap.String("HTTP address", s.http.Addr))
+
+	err := s.http.ListenAndServe()
+	if err != nil && !errors.Is(err, http.ErrServerClosed) {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Server) Start() error {
+	return s.startHTTPServer()
+}
+
+func (s *Server) Shutdown(ctx context.Context) {
+	s.Log.Info("Shutting down HTTP server...")
+
+	err := s.http.Shutdown(ctx)
+	if err != nil {
+		s.Log.Warn("HTTP server shutdown error", zap.Error(err))
+
+		if closeErr := s.http.Close(); closeErr != nil {
+			s.Log.Error("HTTP server close error", zap.Error(closeErr))
+		}
+	} else {
+		s.Log.Info("HTTP server gracefully stopped")
+	}
+}

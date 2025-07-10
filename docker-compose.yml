@@ -1,0 +1,17 @@
+services:
+  postgres:
+    container_name: gophkeeper-pg
+    image: postgres:17-alpine
+    ports:
+      - 5432:5432
+    volumes:
+      - pg:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", $POSTGRES_USER, "-d", $POSTGRES_DB]
+      interval: 10s
+      timeout: 5s
+      start_period: 2s
+      retries: 5
+volumes:
+  pg:
