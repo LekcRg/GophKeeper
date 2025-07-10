@@ -29,3 +29,18 @@ func (ur *UserRepo) CreateUser(
 
 	return nil
 }
+
+func (ur *UserRepo) GetUserByLogin(
+	ctx context.Context, login string,
+) (models.User, error) {
+	query := "SELECT login, id, passhash FROM users WHERE login=$1"
+
+	var user models.User
+
+	err := ur.db.GetContext(ctx, &user, query, login)
+	if err != nil {
+		return user, err
+	}
+
+	return user, nil
+}
