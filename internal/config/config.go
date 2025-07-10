@@ -16,7 +16,11 @@ import (
 type Postgres struct {
 	User     string `yaml:"user" env:"POSTGRES_USER" long:"pg-user" description:"Postgress user"`
 	Password string `yaml:"password" env:"POSTGRES_PASSWORD" long:"pg-pass" description:"Postgress password"`
+	Host     string `yaml:"host" env:"POSTGRES_HOST" long:"pg-host" description:"Postgress host"`
+	Port     string `yaml:"port" env:"POSTGRES_PORT" long:"pg-port" description:"Postgress port"`
 	DB       string `yaml:"db" env:"POSTGRES_DB" long:"pg-db" description:"Postgress database name"`
+	URI      string `yaml:"uri" env:"POSTGRES_URI" long:"pg-uri" description:"Postgress URI"`
+	MaxConns string `yaml:"max_conns" env:"MAX_CONNS" long:"pg-max-conns" description:"Postgress max poll connection"`
 }
 
 type Config struct {
@@ -24,7 +28,7 @@ type Config struct {
 	IsDev  bool   `yaml:"is_dev" env:"IS_DEV" short:"d" long:"dev" description:"Dev mode"`
 	Addr   string `yaml:"address" env:"ADDRESS" short:"a" long:"addresss" description:"Address for HTTP server"`
 
-	Postgres `yaml:"postgres"`
+	Postgres Postgres `yaml:"postgres"`
 }
 
 var ErrNothingMerge = errors.New("nothing to merge")
@@ -64,6 +68,11 @@ func getYamlCfg(path string, cfg *Config) error {
 func getDefaultCfg() *Config {
 	return &Config{
 		Addr: "localhost:8080",
+		Postgres: Postgres{
+			Host:     "localhost",
+			Port:     "5432",
+			MaxConns: "10",
+		},
 	}
 }
 

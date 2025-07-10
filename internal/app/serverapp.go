@@ -12,6 +12,8 @@ import (
 	"github.com/LekcRg/GophKeeper/internal/server/api"
 	"github.com/LekcRg/GophKeeper/internal/server/api/handlers"
 	"github.com/LekcRg/GophKeeper/internal/server/api/middlewares"
+	"github.com/LekcRg/GophKeeper/internal/server/repository"
+	"github.com/LekcRg/GophKeeper/internal/server/repository/postgres"
 	"github.com/LekcRg/GophKeeper/internal/server/service"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
@@ -21,18 +23,18 @@ type Server struct {
 	Log    *zap.Logger
 	Config *config.Config
 	http   *http.Server
+	db     *repository.Repository
 }
 
 var ErrLoggerIsNil = errors.New("logger is nil")
 
-func NewServerApp() (*Server, error) {
+func NewServerApp(ctx context.Context) (*Server, error) {
 	cfg, err := config.GetConfig(os.Args[1:])
 	if err != nil || cfg == nil {
 		return nil, err
 	}
 
 	log, err := logger.CreateLogger(cfg)
-
 	if err != nil {
 		return nil, err
 	} else if log == nil {
@@ -41,9 +43,15 @@ func NewServerApp() (*Server, error) {
 
 	log.Info("Got config", zap.Any("config", cfg))
 
+	db, err := postgres.New(ctx, &cfg.Postgres, log)
+	if err != nil {
+		return nil, err
+	}
+
 	server := &Server{
 		Log:    log,
 		Config: cfg,
+		db:     db,
 	}
 
 	server.http = server.createHTTP()
@@ -52,7 +60,7 @@ func NewServerApp() (*Server, error) {
 }
 
 func (s *Server) createRouter() *chi.Mux {
-	svc := service.New()
+	svc := service.New(s.db)
 	handl := handlers.New(s.Config, svc, s.Log)
 	middl := middlewares.New(s.Log)
 
@@ -104,5 +112,12 @@ func (s *Server) Shutdown(ctx context.Context) {
 		}
 	} else {
 		s.Log.Info("HTTP server gracefully stopped")
+	}
+
+	err = s.db.DB.Close()
+	if err != nil {
+		s.Log.Error("DB close error", zap.Error(err))
+	} else {
+		s.Log.Info("DB gracefully stopped")
 	}
 }

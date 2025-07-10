@@ -1,11 +1,13 @@
 package service
 
+import "github.com/LekcRg/GophKeeper/internal/server/repository"
+
 type Service struct {
 	UserService *UserService
 }
 
-func New() *Service {
+func New(repo *repository.Repository) *Service {
 	return &Service{
-		UserService: NewUserService(),
+		UserService: NewUserService(repo.UserRepo),
 	}
 }

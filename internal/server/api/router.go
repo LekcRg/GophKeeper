@@ -4,14 +4,20 @@ import (
 	"github.com/LekcRg/GophKeeper/internal/server/api/handlers"
 	"github.com/LekcRg/GophKeeper/internal/server/api/middlewares"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 func New(h *handlers.Handlers, m *middlewares.Middlewares) *chi.Mux {
 	r := chi.NewRouter()
-	r.Use(m.RequestLogger)
+	r.Use(
+		m.RequestLogger,
+		middleware.CleanPath,
+		middleware.AllowContentType("application/json"),
+	)
 
 	r.Route("/user", func(cr chi.Router) {
-		cr.Get("/create", h.UserHandlers.CreateUser)
+		cr.Post("/create", h.UserHandlers.CreateUser)
+		cr.Post("/test", h.UserHandlers.Test)
 	})
 
 	return r

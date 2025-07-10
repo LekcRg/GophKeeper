@@ -56,6 +56,8 @@ linters:
     errcheck:
       check-type-assertions: true
       check-blank: true
+      exclude-functions:
+        - (net/http.ResponseWriter).Write
     errorlint:
       errorf: true
     exhaustive:

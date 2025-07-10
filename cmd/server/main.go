@@ -30,12 +30,17 @@ func exitSignals(s *app.Server) {
 func main() {
 	var wg sync.WaitGroup
 
-	sapp, err := app.NewServerApp()
+	const ctxTimeout = 10 * time.Second
+	ctx, cancel := context.WithTimeout(context.Background(), ctxTimeout)
+
+	sapp, err := app.NewServerApp(ctx)
 	if err != nil {
-		log.Fatal("New server app error", err)
+		log.Fatal("New server app error ", err)
 	}
 
 	defer func() {
+		cancel()
+
 		if err = sapp.Log.Sync(); err != nil && !errors.Is(err, syscall.ENOTTY) {
 			sapp.Log.Error("Log sync error", zap.Error(err))
 		}
