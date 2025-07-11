@@ -9,6 +9,7 @@ import (
 	"github.com/LekcRg/GophKeeper/internal/config"
 	"github.com/LekcRg/GophKeeper/internal/errs"
 	"github.com/LekcRg/GophKeeper/internal/models"
+	"github.com/LekcRg/GophKeeper/internal/server/api/response"
 	"go.uber.org/zap"
 )
 
@@ -18,14 +19,14 @@ type UserService interface {
 }
 
 type UserHandlers struct {
-	resp    *Responder
+	resp    *response.Responder
 	service UserService
 	config  *config.Config
 	log     *zap.Logger
 }
 
 func NewUserHandlers(
-	cfg *config.Config, service UserService, log *zap.Logger, resp *Responder,
+	cfg *config.Config, service UserService, log *zap.Logger, resp *response.Responder,
 ) *UserHandlers {
 	return &UserHandlers{
 		resp:    resp,

@@ -20,5 +20,9 @@ func New(h *handlers.Handlers, m *middlewares.Middlewares) *chi.Mux {
 		cr.Post("/login", h.UserHandlers.Login)
 	})
 
+	r.Route("/", func(cr chi.Router) {
+		cr.Use(m.Authenticate)
+	})
+
 	return r
 }

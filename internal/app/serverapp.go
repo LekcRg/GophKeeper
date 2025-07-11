@@ -12,6 +12,7 @@ import (
 	"github.com/LekcRg/GophKeeper/internal/server/api"
 	"github.com/LekcRg/GophKeeper/internal/server/api/handlers"
 	"github.com/LekcRg/GophKeeper/internal/server/api/middlewares"
+	"github.com/LekcRg/GophKeeper/internal/server/api/response"
 	"github.com/LekcRg/GophKeeper/internal/server/repository"
 	"github.com/LekcRg/GophKeeper/internal/server/repository/postgres"
 	"github.com/LekcRg/GophKeeper/internal/server/service"
@@ -72,8 +73,9 @@ func (s *Server) printConfig() {
 
 func (s *Server) createRouter() *chi.Mux {
 	svc := service.New(s.db, s.Config)
-	handl := handlers.New(s.Config, svc, s.Log)
-	middl := middlewares.New(s.Log)
+	resp := response.NewResponder(s.Log)
+	handl := handlers.New(s.Config, svc, s.Log, resp)
+	middl := middlewares.New(s.Config, s.Log, resp)
 
 	return api.New(handl, middl)
 }
