@@ -1,11 +1,11 @@
 package crypto
 
 import (
-	"errors"
 	"strings"
 	"time"
 
 	"github.com/LekcRg/GophKeeper/internal/config"
+	"github.com/LekcRg/GophKeeper/internal/errs"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -27,17 +27,16 @@ func CreateJWTToken(login string, cfg config.Auth) (string, error) {
 func ValidJWTToken(tokenStr, secret string) (jwt.MapClaims, error) {
 	tokenStr = strings.TrimPrefix(tokenStr, "Bearer ")
 
-	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (any, error) {
+	token, err := jwt.Parse(tokenStr, func(_ *jwt.Token) (any, error) {
 		return []byte(secret), nil
 	}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
-
 	if err != nil {
 		return nil, err
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok || !token.Valid {
-		return nil, errors.New("invalid token claims or token not valid")
+		return nil, errs.ErrInvalidJWTToken
 	}
 
 	return claims, nil

@@ -5,14 +5,20 @@ import (
 	"net/http"
 
 	"github.com/LekcRg/GophKeeper/internal/crypto"
+	"github.com/LekcRg/GophKeeper/internal/errs"
 	"go.uber.org/zap"
+)
+
+type key int
+
+const (
+	jwtKey key = iota
 )
 
 func (m *Middlewares) Authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("Authorization")
 
-		m.log.Info(token)
 		if token == "" {
 			m.resp.Error(w, http.StatusUnauthorized, "Unauthorized")
 
@@ -43,9 +49,18 @@ func (m *Middlewares) Authenticate(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "login", loginStr)
+		ctx := context.WithValue(r.Context(), jwtKey, loginStr)
 		req := r.WithContext(ctx)
 
 		next.ServeHTTP(w, req)
 	})
+}
+
+func (m *Middlewares) GetLogin(ctx context.Context) (string, error) {
+	login, ok := ctx.Value(jwtKey).(string)
+	if !ok {
+		return "", errs.ErrNotValidContextLogin
+	}
+
+	return login, nil
 }
