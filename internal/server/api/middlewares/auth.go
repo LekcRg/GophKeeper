@@ -56,7 +56,7 @@ func (m *Middlewares) Authenticate(next http.Handler) http.Handler {
 	})
 }
 
-func (m *Middlewares) GetLogin(ctx context.Context) (string, error) {
+func GetLogin(ctx context.Context) (string, error) {
 	login, ok := ctx.Value(jwtKey).(string)
 	if !ok {
 		return "", errs.ErrNotValidContextLogin

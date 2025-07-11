@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/LekcRg/GophKeeper/internal/models"
 	"go.uber.org/zap"
 )
 
@@ -33,8 +34,8 @@ func (r *Responder) JSON(w http.ResponseWriter, status int, data any) {
 }
 
 func (r *Responder) Error(w http.ResponseWriter, status int, message string) {
-	r.JSON(w, status, map[string]string{
-		"error": message,
+	r.JSON(w, status, models.ResponseError{
+		Error: message,
 	})
 }
 

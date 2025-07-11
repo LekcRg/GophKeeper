@@ -14,18 +14,15 @@ import (
 	"go.uber.org/zap"
 )
 
-func exitSignals(s *app.Server) {
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
-	sig := <-sigChan
-	s.Log.Info("Received shutdown signal", zap.String("signal", sig.String()))
+// @title GophKeeper API
+// @version 1.0
+// @description Gophkeeper password manager HTTP API
 
-	const shutdownTimeout = 10 * time.Second
-	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+// @BasePath /
 
-	defer cancel()
-	s.Shutdown(ctx)
-}
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 
 func main() {
 	var wg sync.WaitGroup
@@ -71,4 +68,17 @@ func main() {
 	}()
 
 	wg.Wait()
+}
+
+func exitSignals(s *app.Server) {
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
+	sig := <-sigChan
+	s.Log.Info("Received shutdown signal", zap.String("signal", sig.String()))
+
+	const shutdownTimeout = 10 * time.Second
+	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+
+	defer cancel()
+	s.Shutdown(ctx)
 }

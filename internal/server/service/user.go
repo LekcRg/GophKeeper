@@ -26,7 +26,7 @@ func NewUserService(ur repository.UserRepo, cfg *config.Config) *UserService {
 }
 
 func (us *UserService) Register(
-	ctx context.Context, req models.RegisterUserReq,
+	ctx context.Context, req models.UserReq,
 ) (models.TokenUserRes, error) {
 	var (
 		err error
@@ -54,7 +54,7 @@ func (us *UserService) Register(
 }
 
 func (us *UserService) Login(
-	ctx context.Context, req models.LoginUserReq,
+	ctx context.Context, req models.UserReq,
 ) (models.TokenUserRes, error) {
 	res := models.TokenUserRes{}
 
@@ -71,4 +71,30 @@ func (us *UserService) Login(
 	res.Token, err = crypto.CreateJWTToken(user.Login, us.config.Auth)
 
 	return res, err
+}
+
+func (us *UserService) ChangePassword(ctx context.Context, req models.UserChangePasswordReq) error {
+	user, err := us.repo.GetUserByLogin(ctx, req.Login)
+	if err != nil {
+		return err
+	}
+
+	validPass := crypto.CheckPasswordHash(req.CurrentPassword, user.PasswordHash)
+	if !validPass {
+		return errs.ErrInvalidPassword
+	}
+
+	newPassHash, err := crypto.HashPassword(req.NewPassword)
+	if err != nil {
+		return err
+	}
+
+	user.PasswordHash = newPassHash
+
+	err = us.repo.UpdateUserPassword(ctx, user)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

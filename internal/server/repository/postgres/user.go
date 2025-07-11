@@ -18,7 +18,7 @@ func NewUserRepo(db *sqlx.DB) *UserRepo {
 }
 
 func (ur *UserRepo) CreateUser(
-	ctx context.Context, reqUser models.RegisterUserReq,
+	ctx context.Context, reqUser models.UserReq,
 ) error {
 	query := "INSERT INTO users (login, passhash) VALUES (:login, :passhash)"
 
@@ -43,4 +43,17 @@ func (ur *UserRepo) GetUserByLogin(
 	}
 
 	return user, nil
+}
+
+func (ur *UserRepo) UpdateUserPassword(
+	ctx context.Context, user models.User,
+) error {
+	query := "UPDATE users SET passhash = :passhash WHERE login = :login"
+
+	_, err := ur.db.NamedExecContext(ctx, query, user)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

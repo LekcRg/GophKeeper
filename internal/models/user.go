@@ -6,7 +6,7 @@ type User struct {
 	ID           int    `json:"id" db:"id"`
 }
 
-type RegisterUserReq struct {
+type UserReq struct {
 	Login        string `json:"login" db:"login"`
 	Password     string `json:"password" db:"-"`
 	PasswordHash string `json:"-" db:"passhash"`
@@ -17,12 +17,12 @@ type UserError struct {
 	Password string `json:"password,omitempty"`
 }
 
-type LoginUserReq struct {
-	Login        string `json:"login" db:"login"`
-	Password     string `json:"password" db:"-"`
-	PasswordHash string `json:"-" db:"passhash"`
-}
-
 type TokenUserRes struct {
 	Token string `json:"token"`
+}
+
+type UserChangePasswordReq struct {
+	Login           string `json:"-"`
+	CurrentPassword string `json:"current-password" db:"-"`
+	NewPassword     string `json:"new-password" db:"-"`
 }

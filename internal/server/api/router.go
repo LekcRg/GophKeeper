@@ -1,10 +1,12 @@
 package api
 
 import (
+	_ "github.com/LekcRg/GophKeeper/docs"
 	"github.com/LekcRg/GophKeeper/internal/server/api/handlers"
 	"github.com/LekcRg/GophKeeper/internal/server/api/middlewares"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 func New(h *handlers.Handlers, m *middlewares.Middlewares) *chi.Mux {
@@ -20,9 +22,15 @@ func New(h *handlers.Handlers, m *middlewares.Middlewares) *chi.Mux {
 		cr.Post("/login", h.UserHandlers.Login)
 	})
 
-	r.Route("/", func(cr chi.Router) {
+	r.Group(func(cr chi.Router) {
 		cr.Use(m.Authenticate)
+
+		cr.Post("/user/change-password", h.UserHandlers.ChangePassword)
 	})
+
+	r.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL("/swagger/doc.json"),
+	))
 
 	return r
 }

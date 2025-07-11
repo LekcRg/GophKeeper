@@ -1,0 +1,141 @@
+basePath: /
+definitions:
+  models.Response:
+    properties:
+      message:
+        type: string
+    type: object
+  models.ResponseError:
+    properties:
+      error:
+        type: string
+    type: object
+  models.TokenUserRes:
+    properties:
+      token:
+        type: string
+    type: object
+  models.UserChangePasswordReq:
+    properties:
+      current-password:
+        type: string
+      new-password:
+        type: string
+    type: object
+  models.UserError:
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+    type: object
+  models.UserReq:
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: Gophkeeper password manager HTTP API
+  title: GophKeeper API
+  version: "1.0"
+paths:
+  /user/change-password:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Current password and new password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserChangePasswordReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+      security:
+      - BearerAuth: []
+      summary: Change user password
+      tags:
+      - Users
+  /user/create:
+    post:
+      consumes:
+      - application/json
+      description: Register user and return JWT token
+      parameters:
+      - description: Login and password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TokenUserRes'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/models.UserError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+      summary: Register user
+      tags:
+      - Users
+  /user/login:
+    post:
+      consumes:
+      - application/json
+      description: Authentication and return JWT token
+      parameters:
+      - description: Login and password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TokenUserRes'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/models.UserError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+      summary: Authentication
+      tags:
+      - Users
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

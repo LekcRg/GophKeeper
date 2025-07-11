@@ -19,5 +19,8 @@ build-server:
 lint:
 	golangci-lint run
 
+make swag:
+	swag init -g ./cmd/server/main.go
+
 betteralign:
 	betteralign -apply -test_files ./...
