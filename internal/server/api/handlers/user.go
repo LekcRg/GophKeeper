@@ -11,6 +11,7 @@ import (
 	"github.com/LekcRg/GophKeeper/internal/models"
 	"github.com/LekcRg/GophKeeper/internal/server/api/middlewares"
 	"github.com/LekcRg/GophKeeper/internal/server/api/response"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"go.uber.org/zap"
 )
 
@@ -46,7 +47,8 @@ func NewUserHandlers(
 // @Produce      json
 // @Param        request body models.UserReq true "Login and password"
 // @Success      200 {object} models.TokenUserRes
-// @Failure      409 {object} models.UserError
+// @Failure      400 {object} models.UserReq
+// @Failure      409 {object} models.UserReq
 // @Failure      500 {object} models.ResponseError
 // @Router       /user/create [post]
 //
@@ -65,9 +67,13 @@ func (uh *UserHandlers) Register(w http.ResponseWriter, r *http.Request) {
 	res, err := uh.service.Register(r.Context(), reqBody)
 	if err != nil {
 		if errors.Is(err, errs.ErrLoginAlreadyExists) {
-			uh.resp.JSON(w, http.StatusConflict, models.UserError{
+			uh.resp.JSON(w, http.StatusConflict, models.UserReq{
 				Login: "login already exists",
 			})
+
+			return
+		} else if ok := errors.As(err, &validation.Errors{}); ok {
+			uh.resp.JSON(w, http.StatusBadRequest, err)
 
 			return
 		}
@@ -89,7 +95,7 @@ func (uh *UserHandlers) Register(w http.ResponseWriter, r *http.Request) {
 // @Produce      json
 // @Param        request body models.UserReq true "Login and password"
 // @Success      200 {object} models.TokenUserRes
-// @Failure      409 {object} models.UserError
+// @Failure      400 {object} models.UserReq
 // @Failure      500 {object} models.ResponseError
 // @Router       /user/login [post]
 //
@@ -105,10 +111,10 @@ func (uh *UserHandlers) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	res, err := uh.service.Login(r.Context(), models.UserReq(reqBody))
+	res, err := uh.service.Login(r.Context(), reqBody)
 	if err != nil {
 		if errors.Is(err, errs.ErrInvalidCredentials) {
-			uh.resp.JSON(w, http.StatusMethodNotAllowed, models.UserError{
+			uh.resp.JSON(w, http.StatusBadRequest, models.UserReq{
 				Login: "invalid login or password",
 			})
 
@@ -131,7 +137,7 @@ func (uh *UserHandlers) Login(w http.ResponseWriter, r *http.Request) {
 // @Produce      json
 // @Param        request body models.UserChangePasswordReq true "Current password and new password"
 // @Success      200 {object} models.Response
-// @Failure      400 {object} models.ResponseError
+// @Failure      400 {object} models.UserChangePasswordReq
 // @Failure      500 {object} models.ResponseError
 // @Router       /user/change-password [post]
 // @Security     BearerAuth
@@ -157,7 +163,13 @@ func (uh *UserHandlers) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	err = uh.service.ChangePassword(r.Context(), req)
 	if err != nil {
 		if errors.Is(err, errs.ErrInvalidPassword) {
-			uh.resp.Error(w, http.StatusBadRequest, "Invalid password")
+			uh.resp.JSON(w, http.StatusBadRequest, models.UserChangePasswordReq{
+				CurrentPassword: "Password is not correct",
+			})
+
+			return
+		} else if ok := errors.As(err, &validation.Errors{}); ok {
+			uh.resp.JSON(w, http.StatusBadRequest, err)
 
 			return
 		}

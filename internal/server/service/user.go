@@ -9,6 +9,7 @@ import (
 	"github.com/LekcRg/GophKeeper/internal/errs"
 	"github.com/LekcRg/GophKeeper/internal/models"
 	"github.com/LekcRg/GophKeeper/internal/server/repository"
+	"github.com/LekcRg/GophKeeper/internal/server/service/valid"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -32,6 +33,11 @@ func (us *UserService) Register(
 		err error
 		res models.TokenUserRes
 	)
+
+	err = valid.Register(&req)
+	if err != nil {
+		return res, err
+	}
 
 	req.PasswordHash, err = crypto.HashPassword(req.Password)
 	if err != nil {
@@ -74,6 +80,11 @@ func (us *UserService) Login(
 }
 
 func (us *UserService) ChangePassword(ctx context.Context, req models.UserChangePasswordReq) error {
+	err := valid.ChangePassword(&req)
+	if err != nil {
+		return err
+	}
+
 	user, err := us.repo.GetUserByLogin(ctx, req.Login)
 	if err != nil {
 		return err

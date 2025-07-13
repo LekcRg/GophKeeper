@@ -12,11 +12,6 @@ type UserReq struct {
 	PasswordHash string `json:"-" db:"passhash"`
 }
 
-type UserError struct {
-	Login    string `json:"login,omitempty"`
-	Password string `json:"password,omitempty"`
-}
-
 type TokenUserRes struct {
 	Token string `json:"token"`
 }

@@ -5,6 +5,7 @@ go 1.24.2
 require (
 	dario.cat/mergo v1.0.2
 	github.com/go-chi/chi/v5 v5.2.2
+	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/jackc/pgerrcode v0.0.0-20240316143900-6e2875d9b438
