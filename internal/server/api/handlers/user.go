@@ -58,7 +58,8 @@ func (uh *UserHandlers) Register(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&reqBody)
 	if err != nil {
-		uh.resp.InternalError(w)
+		uh.log.Error("Json decode error", zap.Error(err))
+		uh.resp.Error(w, http.StatusBadRequest, "Invalid JSON")
 
 		return
 	}
@@ -84,7 +85,7 @@ func (uh *UserHandlers) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	uh.resp.JSON(w, http.StatusOK, res)
+	uh.resp.JSON(w, http.StatusCreated, res)
 }
 
 // Login godoc

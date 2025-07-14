@@ -23,7 +23,7 @@ func passwordField(password *string) *validation.FieldRules {
 			Error("password requires uppercase character"),
 		validation.Match(regexp.MustCompile("[1-9]")).
 			Error("password requires number"),
-		validation.Match(regexp.MustCompile(`[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]`)).
+		validation.Match(regexp.MustCompile(`[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]`)).
 			Error("password requires special character"),
 	)
 }
@@ -38,6 +38,8 @@ func loginField(login *string) *validation.FieldRules {
 		login,
 		validation.Required,
 		validation.Length(minLenLogin, maxLenLogin),
+		validation.Match(regexp.MustCompile(`^[a-zA-Z0-9_-]*$`)).
+			Error("login must contain only letters, numbers, underscores, or hyphens"),
 	)
 }
 

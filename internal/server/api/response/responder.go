@@ -40,5 +40,5 @@ func (r *Responder) Error(w http.ResponseWriter, status int, message string) {
 }
 
 func (r *Responder) InternalError(w http.ResponseWriter) {
-	r.Error(w, http.StatusInternalServerError, "internal server error")
+	r.Error(w, http.StatusInternalServerError, "Internal server error")
 }

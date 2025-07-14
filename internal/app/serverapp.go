@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/LekcRg/GophKeeper/internal/buildinfo"
 	"github.com/LekcRg/GophKeeper/internal/config"
 	"github.com/LekcRg/GophKeeper/internal/logger"
 	"github.com/LekcRg/GophKeeper/internal/server/api"
@@ -41,6 +42,8 @@ func NewServerApp(ctx context.Context) (*Server, error) {
 	} else if log == nil {
 		return nil, ErrLoggerIsNil
 	}
+
+	buildinfo.Print(log)
 
 	server := &Server{
 		Log:    log,

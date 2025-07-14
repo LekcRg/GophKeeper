@@ -56,8 +56,6 @@ linters:
     errcheck:
       check-type-assertions: true
       check-blank: true
-      # exclude-functions:
-      #   - (net/http.ResponseWriter).Write
     errorlint:
       errorf: true
     exhaustive:
@@ -98,12 +96,9 @@ linters:
       - std-error-handling
     rules:
       - linters:
-          - godot
-          - paralleltest
-        path: integration-test
-      - linters:
-          - godot
-        path: internal/controller/http
+          - funlen
+          - err113
+        path: _test\.go
     paths:
       - bin/
       - third_party$

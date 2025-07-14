@@ -1,7 +1,7 @@
 package api
 
 import (
-	_ "github.com/LekcRg/GophKeeper/docs"
+	_ "github.com/LekcRg/GophKeeper/docs" // for swagger documentation.
 	"github.com/LekcRg/GophKeeper/internal/server/api/handlers"
 	"github.com/LekcRg/GophKeeper/internal/server/api/middlewares"
 	"github.com/go-chi/chi/v5"
