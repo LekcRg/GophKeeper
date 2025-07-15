@@ -10,8 +10,6 @@ import (
 	"github.com/LekcRg/GophKeeper/internal/models"
 	"github.com/LekcRg/GophKeeper/internal/server/repository"
 	"github.com/LekcRg/GophKeeper/internal/server/service/valid"
-	"github.com/jackc/pgerrcode"
-	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type UserService struct {
@@ -46,11 +44,6 @@ func (us *UserService) Register(
 
 	err = us.repo.CreateUser(ctx, req)
 	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
-			return res, errs.ErrLoginAlreadyExists
-		}
-
 		return res, err
 	}
 
@@ -64,8 +57,17 @@ func (us *UserService) Login(
 ) (models.TokenUserRes, error) {
 	res := models.TokenUserRes{}
 
+	err := valid.Login(&req)
+	if err != nil {
+		return res, err
+	}
+
 	user, err := us.repo.GetUserByLogin(ctx, req.Login)
 	if err != nil {
+		if errors.Is(err, errs.ErrUserWithLoginNotFound) {
+			return res, errs.ErrInvalidCredentials
+		}
+
 		return res, err
 	}
 

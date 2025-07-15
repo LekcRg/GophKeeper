@@ -2,8 +2,13 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 
+	"github.com/LekcRg/GophKeeper/internal/errs"
 	"github.com/LekcRg/GophKeeper/internal/models"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -24,6 +29,11 @@ func (ur *UserRepo) CreateUser(
 
 	_, err := ur.db.NamedExecContext(ctx, query, reqUser)
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
+			return errs.ErrLoginAlreadyExists
+		}
+
 		return err
 	}
 
@@ -39,6 +49,10 @@ func (ur *UserRepo) GetUserByLogin(
 
 	err := ur.db.GetContext(ctx, &user, query, login)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return user, errs.ErrUserWithLoginNotFound
+		}
+
 		return user, err
 	}
 

@@ -140,7 +140,7 @@ func (uh *UserHandlers) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	var req models.UserChangePasswordReq
 
 	login, err := middlewares.GetLogin(r.Context())
-	if err != nil {
+	if err != nil || login == "" {
 		uh.resp.Error(w, http.StatusUnauthorized, "Unauthorized")
 
 		return

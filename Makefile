@@ -1,6 +1,7 @@
 SERVER_PATH := ./cmd/server
 CLIENT_PATH := ./cmd/client
 COVERAGE_FILE := cover.out
+NO_MOCKS_COVERAGE_FILE := clean_cover.out
 p ?= ./...
 
 BUILD_VERSION := v0.0.1
@@ -41,10 +42,13 @@ lint:
 
 cover:
 	go test -coverprofile=$(COVERAGE_FILE) ./...
-	go tool cover -func=$(COVERAGE_FILE)
+	grep -Ev "internal/mocks|proto" $(COVERAGE_FILE) > $(NO_MOCKS_COVERAGE_FILE)
+	go tool cover -func=$(NO_MOCKS_COVERAGE_FILE)
 
 cover-html:
 	go test -coverprofile=$(COVERAGE_FILE) $(p)
+	grep -Ev "internal/mocks|proto" $(COVERAGE_FILE) > $(NO_MOCKS_COVERAGE_FILE)
+	go tool cover -func=$(NO_MOCKS_COVERAGE_FILE)
 	go tool cover -html=$(COVERAGE_FILE)
 
 make swag:

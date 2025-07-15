@@ -59,6 +59,8 @@ func Login(user *models.UserReq) error {
 
 func ChangePassword(user *models.UserChangePasswordReq) error {
 	return validation.ValidateStruct(user,
+		validation.Field(&user.Login, validation.Required),
+		validation.Field(&user.CurrentPassword, validation.Required),
 		passwordField(&user.NewPassword),
 	)
 }
