@@ -294,12 +294,14 @@ func TestChangePassword(t *testing.T) {
 				resErrs  = map[string]string{}
 			)
 
-			res, _ := client.R().
+			res, err := client.R().
 				SetHeader("Content-Type", "application/json").
 				SetBody(tt.body).
 				SetResult(&tokenRes).
 				SetError(&resErrs).
 				Post(server.URL)
+
+			require.NoError(t, err)
 
 			assert.Equal(t, tt.wantCode, res.StatusCode())
 
@@ -325,6 +327,8 @@ func injectTestContext(h http.Handler, login string) http.Handler {
 }
 
 func compareErrs(t *testing.T, wantErrs, resErrs map[string]string) {
+	t.Helper()
+
 	for key, val := range wantErrs {
 		assert.Equal(t, val, resErrs[key])
 	}
