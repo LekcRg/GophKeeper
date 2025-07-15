@@ -49,11 +49,15 @@ func (m *Middlewares) Authenticate(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), jwtKey, loginStr)
+		ctx := AddLoginToCtx(r.Context(), loginStr)
 		req := r.WithContext(ctx)
 
 		next.ServeHTTP(w, req)
 	})
+}
+
+func AddLoginToCtx(ctx context.Context, login string) context.Context {
+	return context.WithValue(ctx, jwtKey, login)
 }
 
 func GetLogin(ctx context.Context) (string, error) {

@@ -28,6 +28,8 @@ type UserHandlers struct {
 	log     *zap.Logger
 }
 
+type userReqService func(ctx context.Context, req models.UserReq) (models.TokenUserRes, error)
+
 func NewUserHandlers(
 	cfg *config.Config, service UserService, log *zap.Logger, resp *response.Responder,
 ) *UserHandlers {
@@ -36,6 +38,53 @@ func NewUserHandlers(
 		service: service,
 		config:  cfg,
 		log:     log,
+	}
+}
+
+func (uh *UserHandlers) userReqHandler(
+	w http.ResponseWriter, r *http.Request,
+	svc userReqService,
+) {
+	var reqBody models.UserReq
+
+	err := json.NewDecoder(r.Body).Decode(&reqBody)
+	if err != nil {
+		uh.log.Error("Json decode error", zap.Error(err))
+		uh.resp.Error(w, http.StatusBadRequest, "Invalid JSON")
+
+		return
+	}
+	defer r.Body.Close()
+
+	res, err := svc(r.Context(), reqBody)
+	if err != nil {
+		uh.handleServiceError(w, err)
+
+		return
+	}
+
+	uh.resp.JSON(w, http.StatusCreated, res)
+}
+
+func (uh *UserHandlers) handleServiceError(w http.ResponseWriter, err error) {
+	switch {
+	case errors.Is(err, errs.ErrLoginAlreadyExists):
+		uh.resp.JSON(w, http.StatusConflict, models.UserReq{
+			Login: "Login already exists",
+		})
+	case errors.Is(err, errs.ErrInvalidCredentials):
+		uh.resp.JSON(w, http.StatusBadRequest, models.UserReq{
+			Login: "Invalid login or password",
+		})
+	case errors.Is(err, errs.ErrInvalidPassword):
+		uh.resp.JSON(w, http.StatusBadRequest, models.UserChangePasswordReq{
+			CurrentPassword: "Password is not correct",
+		})
+	case errors.As(err, &validation.Errors{}):
+		uh.resp.JSON(w, http.StatusBadRequest, err)
+	default:
+		uh.log.Error("UserService unexpected error", zap.Error(err))
+		uh.resp.InternalError(w)
 	}
 }
 
@@ -54,38 +103,7 @@ func NewUserHandlers(
 //
 // Register handles user registration.
 func (uh *UserHandlers) Register(w http.ResponseWriter, r *http.Request) {
-	var reqBody models.UserReq
-
-	err := json.NewDecoder(r.Body).Decode(&reqBody)
-	if err != nil {
-		uh.log.Error("Json decode error", zap.Error(err))
-		uh.resp.Error(w, http.StatusBadRequest, "Invalid JSON")
-
-		return
-	}
-	defer r.Body.Close()
-
-	res, err := uh.service.Register(r.Context(), reqBody)
-	if err != nil {
-		if errors.Is(err, errs.ErrLoginAlreadyExists) {
-			uh.resp.JSON(w, http.StatusConflict, models.UserReq{
-				Login: "login already exists",
-			})
-
-			return
-		} else if ok := errors.As(err, &validation.Errors{}); ok {
-			uh.resp.JSON(w, http.StatusBadRequest, err)
-
-			return
-		}
-
-		uh.log.Error("UserService error", zap.Error(err))
-		uh.resp.InternalError(w)
-
-		return
-	}
-
-	uh.resp.JSON(w, http.StatusCreated, res)
+	uh.userReqHandler(w, r, uh.service.Register)
 }
 
 // Login godoc
@@ -102,33 +120,7 @@ func (uh *UserHandlers) Register(w http.ResponseWriter, r *http.Request) {
 //
 // Login handles user authentication.
 func (uh *UserHandlers) Login(w http.ResponseWriter, r *http.Request) {
-	var reqBody models.UserReq
-
-	err := json.NewDecoder(r.Body).Decode(&reqBody)
-	if err != nil {
-		uh.resp.InternalError(w)
-
-		return
-	}
-	defer r.Body.Close()
-
-	res, err := uh.service.Login(r.Context(), reqBody)
-	if err != nil {
-		if errors.Is(err, errs.ErrInvalidCredentials) {
-			uh.resp.JSON(w, http.StatusBadRequest, models.UserReq{
-				Login: "invalid login or password",
-			})
-
-			return
-		}
-
-		uh.log.Error("UserService error", zap.Error(err))
-		uh.resp.InternalError(w)
-
-		return
-	}
-
-	uh.resp.JSON(w, http.StatusOK, res)
+	uh.userReqHandler(w, r, uh.service.Login)
 }
 
 // ChangePassword godoc
@@ -156,26 +148,17 @@ func (uh *UserHandlers) ChangePassword(w http.ResponseWriter, r *http.Request) {
 
 	err = json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
-		uh.resp.InternalError(w)
+		uh.log.Error("Json decode error", zap.Error(err))
+		uh.resp.Error(w, http.StatusBadRequest, "Invalid JSON")
+
+		return
 	}
 
 	req.Login = login
 
 	err = uh.service.ChangePassword(r.Context(), req)
 	if err != nil {
-		if errors.Is(err, errs.ErrInvalidPassword) {
-			uh.resp.JSON(w, http.StatusBadRequest, models.UserChangePasswordReq{
-				CurrentPassword: "Password is not correct",
-			})
-
-			return
-		} else if ok := errors.As(err, &validation.Errors{}); ok {
-			uh.resp.JSON(w, http.StatusBadRequest, err)
-
-			return
-		}
-
-		uh.resp.InternalError(w)
+		uh.handleServiceError(w, err)
 
 		return
 	}

@@ -50,6 +50,13 @@ func Register(user *models.UserReq) error {
 	)
 }
 
+func Login(user *models.UserReq) error {
+	return validation.ValidateStruct(user,
+		validation.Field(&user.Login, validation.Required),
+		validation.Field(&user.Password, validation.Required),
+	)
+}
+
 func ChangePassword(user *models.UserChangePasswordReq) error {
 	return validation.ValidateStruct(user,
 		passwordField(&user.NewPassword),
