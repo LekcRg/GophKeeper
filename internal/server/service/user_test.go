@@ -89,7 +89,7 @@ func TestRegister(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			testLoginRegisterRun(t, tt, func(repo *mocks.MockUserRepo) {
+			testLoginRegisterRun(t, &tt, func(repo *mocks.MockUserRepo) {
 				repo.EXPECT().
 					CreateUser(mock.Anything, mock.Anything).
 					Return(tt.mockErr)
@@ -103,7 +103,7 @@ func TestRegister(t *testing.T) {
 func TestLogin(t *testing.T) {
 	t.Parallel()
 
-	password := "T3stP@as5word"
+	const password = "T3stP@as5word"
 	hash, err := crypto.HashPassword(password)
 	require.NoError(t, err)
 
@@ -166,7 +166,7 @@ func TestLogin(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		testLoginRegisterRun(t, tt, func(repo *mocks.MockUserRepo) {
+		testLoginRegisterRun(t, &tt, func(repo *mocks.MockUserRepo) {
 			repo.EXPECT().
 				GetUserByLogin(mock.Anything, tt.req.Login).
 				Return(models.User{
@@ -180,7 +180,7 @@ func TestLogin(t *testing.T) {
 }
 
 func testLoginRegisterRun(
-	t *testing.T, tt testLoginRegister,
+	t *testing.T, tt *testLoginRegister,
 	mockFunc func(repo *mocks.MockUserRepo),
 	svcFunc func(us *UserService) testUserService,
 ) {
