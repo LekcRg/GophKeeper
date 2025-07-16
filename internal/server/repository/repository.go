@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/LekcRg/GophKeeper/internal/models"
 )
@@ -18,5 +19,6 @@ type UserRepo interface {
 
 type Repository struct {
 	DB       DB
+	SQL      *sql.DB
 	UserRepo UserRepo
 }

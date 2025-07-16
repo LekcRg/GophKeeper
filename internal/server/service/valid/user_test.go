@@ -177,6 +177,8 @@ func TestChangePassword(t *testing.T) {
 }
 
 func checkErrorsRun(t *testing.T, wantErrs []string, f func() error) {
+	t.Helper()
+
 	err := f()
 
 	if len(wantErrs) == 0 {

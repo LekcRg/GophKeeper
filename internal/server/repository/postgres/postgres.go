@@ -13,7 +13,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type postgres struct {
+type postgresRepo struct {
 	db     *sqlx.DB
 	config *config.Postgres
 }
@@ -23,7 +23,7 @@ const PostgresDriver = "pgx"
 func New(
 	ctx context.Context, cfg *config.Postgres, log *zap.Logger,
 ) (*repository.Repository, error) {
-	pg := &postgres{
+	pg := &postgresRepo{
 		config: cfg,
 	}
 
@@ -45,11 +45,12 @@ func New(
 
 	return &repository.Repository{
 		DB:       pg,
+		SQL:      nativeDB,
 		UserRepo: NewUserRepo(db),
 	}, nil
 }
 
-func (p *postgres) getURIFromConfig() string {
+func (p *postgresRepo) getURIFromConfig() string {
 	dbURI := p.config.URI
 	if p.config.URI == "" {
 		dbURI = fmt.Sprintf("postgres://%s:%s@%s:%s/%s?pool_max_conns=%s",
@@ -61,7 +62,7 @@ func (p *postgres) getURIFromConfig() string {
 	return dbURI
 }
 
-func (p *postgres) getPgPool(ctx context.Context) (*sql.DB, error) {
+func (p *postgresRepo) getPgPool(ctx context.Context) (*sql.DB, error) {
 	connConfig, err := pgxpool.ParseConfig(p.getURIFromConfig())
 	if err != nil {
 		return nil, err
@@ -75,6 +76,6 @@ func (p *postgres) getPgPool(ctx context.Context) (*sql.DB, error) {
 	return stdlib.OpenDBFromPool(connPool), nil
 }
 
-func (p *postgres) Close() error {
+func (p *postgresRepo) Close() error {
 	return p.db.Close()
 }
