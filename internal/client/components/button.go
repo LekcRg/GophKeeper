@@ -12,7 +12,7 @@ type Button struct {
 	Focused bool
 }
 
-func (b *Button) Update(msg tea.Msg) tea.Cmd {
+func (b *Button) Update(_ tea.Msg) tea.Cmd {
 	return nil
 }
 

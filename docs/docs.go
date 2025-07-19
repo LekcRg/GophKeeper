@@ -15,6 +15,52 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/user/api-key": {
+            "post": {
+                "description": "Create or update user API Key",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "API Key generation",
+                "parameters": [
+                    {
+                        "description": "Login and password",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UserReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIKeyRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.UserReq"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ResponseError"
+                        }
+                    }
+                }
+            }
+        },
         "/user/change-password": {
             "post": {
                 "security": [
@@ -53,7 +99,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.ResponseError"
+                            "$ref": "#/definitions/models.UserChangePasswordReq"
                         }
                     },
                     "500": {
@@ -67,7 +113,7 @@ const docTemplate = `{
         },
         "/user/create": {
             "post": {
-                "description": "Register user and return JWT token",
+                "description": "Register user and return API Key",
                 "consumes": [
                     "application/json"
                 ],
@@ -93,59 +139,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.TokenUserRes"
+                            "$ref": "#/definitions/models.APIKeyRes"
                         }
                     },
-                    "409": {
-                        "description": "Conflict",
-                        "schema": {
-                            "$ref": "#/definitions/models.UserError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.ResponseError"
-                        }
-                    }
-                }
-            }
-        },
-        "/user/login": {
-            "post": {
-                "description": "Authentication and return JWT token",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Users"
-                ],
-                "summary": "Authentication",
-                "parameters": [
-                    {
-                        "description": "Login and password",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/models.UserReq"
                         }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.TokenUserRes"
-                        }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/models.UserError"
+                            "$ref": "#/definitions/models.UserReq"
                         }
                     },
                     "500": {
@@ -159,6 +165,14 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "models.APIKeyRes": {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "type": "string"
+                }
+            }
+        },
         "models.Response": {
             "type": "object",
             "properties": {
@@ -175,32 +189,16 @@ const docTemplate = `{
                 }
             }
         },
-        "models.TokenUserRes": {
-            "type": "object",
-            "properties": {
-                "token": {
-                    "type": "string"
-                }
-            }
-        },
         "models.UserChangePasswordReq": {
             "type": "object",
             "properties": {
                 "current-password": {
                     "type": "string"
                 },
-                "new-password": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.UserError": {
-            "type": "object",
-            "properties": {
                 "login": {
                     "type": "string"
                 },
-                "password": {
+                "new-password": {
                     "type": "string"
                 }
             }

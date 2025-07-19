@@ -10,16 +10,17 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type model struct {
+type AuthModel struct {
+	tea.Model
 	error      string
-	help       components.AuthHelp
+	help       *components.AuthHelp
 	inputs     []components.TextInput
 	buttons    []components.Button
 	focusIndex int
 }
 
-func NewAuth() tea.Model {
-	m := model{
+func NewAuth() *AuthModel {
+	m := AuthModel{
 		inputs: []components.TextInput{
 			components.NewTextInput(components.TextInputOpts{
 				Placeholder: "Login",
@@ -41,24 +42,26 @@ func NewAuth() tea.Model {
 		help: components.NewAuthHelp(),
 	}
 
-	return m
+	return &m
 }
 
-func (m model) lastIndex() int {
+func (m *AuthModel) lastIndex() int {
 	return len(m.inputs) + len(m.buttons) - 1
 }
 
-func (m model) Init() tea.Cmd {
+func (m *AuthModel) Init() tea.Cmd {
 	return textinput.Blink
 }
 
-func (m model) ChangeFocus(s string) (model, []tea.Cmd) {
+func (m *AuthModel) ChangeFocus(msg tea.Msg) []tea.Cmd {
 	m.error = ""
 
-	if s == "up" || s == "shift+tab" {
-		m.focusIndex--
-	} else {
-		m.focusIndex++
+	if keyMsg, ok := msg.(tea.KeyMsg); ok {
+		if keyMsg.Type == tea.KeyUp || keyMsg.Type == tea.KeyShiftTab {
+			m.focusIndex--
+		} else {
+			m.focusIndex++
+		}
 	}
 
 	if m.focusIndex > m.lastIndex() {
@@ -87,35 +90,34 @@ func (m model) ChangeFocus(s string) (model, []tea.Cmd) {
 		}
 	}
 
-	return m, cmds
+	return cmds
 }
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "tab", "shift+tab", "up", "down", "enter":
-			s := msg.String()
-			if s == "enter" && m.focusIndex >= len(m.inputs) {
-				// get values from m.Inputs
-				// send values from inputs to auth
-				m.error = "Login or password isn't valid"
+func (m *AuthModel) Update(msg tea.Msg) tea.Cmd {
+	keyMsg, ok := msg.(tea.KeyMsg)
 
-				return m, tea.Batch()
-			}
+	key := keyMsg.Type
+	if ok && (key == tea.KeyTab || key == tea.KeyShiftTab ||
+		key == tea.KeyUp || key == tea.KeyDown || key == tea.KeyEnter) {
+		if key == tea.KeyEnter && m.focusIndex >= len(m.inputs) {
+			// get values from m.Inputs
+			// send values from inputs to auth
+			m.error = "Login or password isn't valid"
 
-			newM, cmds := m.ChangeFocus(s)
-
-			return newM, tea.Batch(cmds...)
+			return tea.Batch()
 		}
+
+		cmds := m.ChangeFocus(msg)
+
+		return tea.Batch(cmds...)
 	}
 
 	cmd := m.updateInputs(msg)
 
-	return m, cmd
+	return cmd
 }
 
-func (m *model) updateInputs(msg tea.Msg) tea.Cmd {
+func (m *AuthModel) updateInputs(msg tea.Msg) tea.Cmd {
 	cmds := make([]tea.Cmd, len(m.inputs))
 
 	for i := range m.inputs {
@@ -125,18 +127,18 @@ func (m *model) updateInputs(msg tea.Msg) tea.Cmd {
 	return tea.Batch(cmds...)
 }
 
-func (m model) View() string {
+func (m *AuthModel) View() string {
 	var b strings.Builder
 
-	for _, input := range m.inputs {
-		b.WriteString(input.View())
+	for i := 0; i < len(m.inputs); i++ {
+		b.WriteString(m.inputs[i].View())
 		b.WriteRune('\n')
 	}
 
 	fmt.Fprintf(&b, "%s\n\n", styles.ErrorStyle.Render(m.error))
 
-	for _, button := range m.buttons {
-		b.WriteString(button.View())
+	for i := 0; i < len(m.buttons); i++ {
+		b.WriteString(m.buttons[i].View())
 		b.WriteRune('\n')
 	}
 

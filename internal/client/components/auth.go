@@ -6,13 +6,13 @@ import (
 )
 
 type AuthHelp struct {
-	keys AuthKeyMap
 	help help.Model
+	keys *AuthKeyMap
 }
 
-func NewAuthHelp() AuthHelp {
-	return AuthHelp{
-		keys: AuthKeyMap{
+func NewAuthHelp() *AuthHelp {
+	return &AuthHelp{
+		keys: &AuthKeyMap{
 			Up: key.NewBinding(
 				key.WithKeys("up", "shift+tab"),
 				key.WithHelp("↑/Shift+Tab", "move up"),
@@ -30,7 +30,7 @@ func NewAuthHelp() AuthHelp {
 	}
 }
 
-func (au AuthHelp) View() string {
+func (au *AuthHelp) View() string {
 	return au.help.View(au.keys)
 }
 
@@ -40,10 +40,10 @@ type AuthKeyMap struct {
 	Quit key.Binding
 }
 
-func (k AuthKeyMap) ShortHelp() []key.Binding {
+func (k *AuthKeyMap) ShortHelp() []key.Binding {
 	return []key.Binding{k.Up, k.Down, k.Quit}
 }
 
-func (k AuthKeyMap) FullHelp() [][]key.Binding {
+func (k *AuthKeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{}
 }

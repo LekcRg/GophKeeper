@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"os"
 
 	"github.com/LekcRg/GophKeeper/internal/client/views"
@@ -16,7 +16,7 @@ const (
 )
 
 type model struct {
-	auth tea.Model
+	auth *views.AuthModel
 	view CurrentView
 }
 
@@ -40,10 +40,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	switch m.view {
-	case auth:
-		var cmd tea.Cmd
-		m.auth, cmd = m.auth.Update(msg)
+	// switch m.view {
+	// case auth:
+	// 	var cmd tea.Cmd
+	// 	m.auth, cmd = m.auth.Update(msg)
+
+	// 	return m, cmd
+	// }
+	if m.view == auth {
+		cmd := m.auth.Update(msg)
 
 		return m, cmd
 	}
@@ -52,8 +57,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	switch m.view {
-	case auth:
+	if m.view == auth {
 		return m.auth.View()
 	}
 
@@ -62,7 +66,7 @@ func (m model) View() string {
 
 func main() {
 	if _, err := tea.NewProgram(initialModel(), tea.WithAltScreen()).Run(); err != nil {
-		fmt.Printf("could not start program: %s\n", err)
+		log.Printf("could not start program: %s\n", err)
 		os.Exit(1)
 	}
 }
