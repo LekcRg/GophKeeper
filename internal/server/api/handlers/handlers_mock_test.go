@@ -84,78 +84,23 @@ func (_c *MockUserService_ChangePassword_Call) RunAndReturn(run func(ctx context
 	return _c
 }
 
-// Login provides a mock function for the type MockUserService
-func (_mock *MockUserService) Login(ctx context.Context, req models.UserReq) (models.TokenUserRes, error) {
-	ret := _mock.Called(ctx, req)
-
-	if len(ret) == 0 {
-		panic("no return value specified for Login")
-	}
-
-	var r0 models.TokenUserRes
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, models.UserReq) (models.TokenUserRes, error)); ok {
-		return returnFunc(ctx, req)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, models.UserReq) models.TokenUserRes); ok {
-		r0 = returnFunc(ctx, req)
-	} else {
-		r0 = ret.Get(0).(models.TokenUserRes)
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, models.UserReq) error); ok {
-		r1 = returnFunc(ctx, req)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockUserService_Login_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Login'
-type MockUserService_Login_Call struct {
-	*mock.Call
-}
-
-// Login is a helper method to define mock.On call
-//   - ctx
-//   - req
-func (_e *MockUserService_Expecter) Login(ctx interface{}, req interface{}) *MockUserService_Login_Call {
-	return &MockUserService_Login_Call{Call: _e.mock.On("Login", ctx, req)}
-}
-
-func (_c *MockUserService_Login_Call) Run(run func(ctx context.Context, req models.UserReq)) *MockUserService_Login_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(models.UserReq))
-	})
-	return _c
-}
-
-func (_c *MockUserService_Login_Call) Return(tokenUserRes models.TokenUserRes, err error) *MockUserService_Login_Call {
-	_c.Call.Return(tokenUserRes, err)
-	return _c
-}
-
-func (_c *MockUserService_Login_Call) RunAndReturn(run func(ctx context.Context, req models.UserReq) (models.TokenUserRes, error)) *MockUserService_Login_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // Register provides a mock function for the type MockUserService
-func (_mock *MockUserService) Register(ctx context.Context, req models.UserReq) (models.TokenUserRes, error) {
+func (_mock *MockUserService) Register(ctx context.Context, req models.UserReq) (models.APIKeyRes, error) {
 	ret := _mock.Called(ctx, req)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Register")
 	}
 
-	var r0 models.TokenUserRes
+	var r0 models.APIKeyRes
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, models.UserReq) (models.TokenUserRes, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, models.UserReq) (models.APIKeyRes, error)); ok {
 		return returnFunc(ctx, req)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, models.UserReq) models.TokenUserRes); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, models.UserReq) models.APIKeyRes); ok {
 		r0 = returnFunc(ctx, req)
 	} else {
-		r0 = ret.Get(0).(models.TokenUserRes)
+		r0 = ret.Get(0).(models.APIKeyRes)
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, models.UserReq) error); ok {
 		r1 = returnFunc(ctx, req)
@@ -184,12 +129,67 @@ func (_c *MockUserService_Register_Call) Run(run func(ctx context.Context, req m
 	return _c
 }
 
-func (_c *MockUserService_Register_Call) Return(tokenUserRes models.TokenUserRes, err error) *MockUserService_Register_Call {
-	_c.Call.Return(tokenUserRes, err)
+func (_c *MockUserService_Register_Call) Return(aPIKeyRes models.APIKeyRes, err error) *MockUserService_Register_Call {
+	_c.Call.Return(aPIKeyRes, err)
 	return _c
 }
 
-func (_c *MockUserService_Register_Call) RunAndReturn(run func(ctx context.Context, req models.UserReq) (models.TokenUserRes, error)) *MockUserService_Register_Call {
+func (_c *MockUserService_Register_Call) RunAndReturn(run func(ctx context.Context, req models.UserReq) (models.APIKeyRes, error)) *MockUserService_Register_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UpdateAPIKey provides a mock function for the type MockUserService
+func (_mock *MockUserService) UpdateAPIKey(ctx context.Context, req models.UserReq) (models.APIKeyRes, error) {
+	ret := _mock.Called(ctx, req)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateAPIKey")
+	}
+
+	var r0 models.APIKeyRes
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, models.UserReq) (models.APIKeyRes, error)); ok {
+		return returnFunc(ctx, req)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, models.UserReq) models.APIKeyRes); ok {
+		r0 = returnFunc(ctx, req)
+	} else {
+		r0 = ret.Get(0).(models.APIKeyRes)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, models.UserReq) error); ok {
+		r1 = returnFunc(ctx, req)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockUserService_UpdateAPIKey_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateAPIKey'
+type MockUserService_UpdateAPIKey_Call struct {
+	*mock.Call
+}
+
+// UpdateAPIKey is a helper method to define mock.On call
+//   - ctx
+//   - req
+func (_e *MockUserService_Expecter) UpdateAPIKey(ctx interface{}, req interface{}) *MockUserService_UpdateAPIKey_Call {
+	return &MockUserService_UpdateAPIKey_Call{Call: _e.mock.On("UpdateAPIKey", ctx, req)}
+}
+
+func (_c *MockUserService_UpdateAPIKey_Call) Run(run func(ctx context.Context, req models.UserReq)) *MockUserService_UpdateAPIKey_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(models.UserReq))
+	})
+	return _c
+}
+
+func (_c *MockUserService_UpdateAPIKey_Call) Return(aPIKeyRes models.APIKeyRes, err error) *MockUserService_UpdateAPIKey_Call {
+	_c.Call.Return(aPIKeyRes, err)
+	return _c
+}
+
+func (_c *MockUserService_UpdateAPIKey_Call) RunAndReturn(run func(ctx context.Context, req models.UserReq) (models.APIKeyRes, error)) *MockUserService_UpdateAPIKey_Call {
 	_c.Call.Return(run)
 	return _c
 }

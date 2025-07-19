@@ -9,15 +9,14 @@ import (
 	"github.com/LekcRg/GophKeeper/internal/config"
 	"github.com/LekcRg/GophKeeper/internal/errs"
 	"github.com/LekcRg/GophKeeper/internal/models"
-	"github.com/LekcRg/GophKeeper/internal/server/api/middlewares"
 	"github.com/LekcRg/GophKeeper/internal/server/api/response"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"go.uber.org/zap"
 )
 
 type UserService interface {
-	Register(ctx context.Context, req models.UserReq) (models.TokenUserRes, error)
-	Login(ctx context.Context, req models.UserReq) (models.TokenUserRes, error)
+	Register(ctx context.Context, req models.UserReq) (models.APIKeyRes, error)
+	UpdateAPIKey(ctx context.Context, req models.UserReq) (models.APIKeyRes, error)
 	ChangePassword(ctx context.Context, req models.UserChangePasswordReq) error
 }
 
@@ -28,7 +27,7 @@ type UserHandlers struct {
 	log     *zap.Logger
 }
 
-type userReqService func(ctx context.Context, req models.UserReq) (models.TokenUserRes, error)
+type userReqService func(ctx context.Context, req models.UserReq) (models.APIKeyRes, error)
 
 func NewUserHandlers(
 	cfg *config.Config, service UserService, log *zap.Logger, resp *response.Responder,
@@ -90,37 +89,37 @@ func (uh *UserHandlers) handleServiceError(w http.ResponseWriter, err error) {
 
 // Register godoc
 // @Summary      Register user
-// @Description  Register user and return JWT token
+// @Description  Register user and return API Key
 // @Tags         Users
 // @Accept       json
 // @Produce      json
 // @Param        request body models.UserReq true "Login and password"
-// @Success      200 {object} models.TokenUserRes
+// @Success      200 {object} models.APIKeyRes
 // @Failure      400 {object} models.UserReq
 // @Failure      409 {object} models.UserReq
 // @Failure      500 {object} models.ResponseError
 // @Router       /user/create [post]
 //
-// Register handles user registration.
+// Register handles user registration and creating API Key.
 func (uh *UserHandlers) Register(w http.ResponseWriter, r *http.Request) {
 	uh.userReqHandler(w, r, uh.service.Register)
 }
 
-// Login godoc
-// @Summary      Authentication
-// @Description  Authentication and return JWT token
+// APIKey godoc
+// @Summary      API Key generation
+// @Description  Create or update user API Key
 // @Tags         Users
 // @Accept       json
 // @Produce      json
 // @Param        request body models.UserReq true "Login and password"
-// @Success      200 {object} models.TokenUserRes
+// @Success      200 {object} models.APIKeyRes
 // @Failure      400 {object} models.UserReq
 // @Failure      500 {object} models.ResponseError
-// @Router       /user/login [post]
+// @Router       /user/api-key [post]
 //
-// Login handles user authentication.
-func (uh *UserHandlers) Login(w http.ResponseWriter, r *http.Request) {
-	uh.userReqHandler(w, r, uh.service.Login)
+// APIKey handles create or update user API Key.
+func (uh *UserHandlers) APIKey(w http.ResponseWriter, r *http.Request) {
+	uh.userReqHandler(w, r, uh.service.UpdateAPIKey)
 }
 
 // ChangePassword godoc
@@ -139,22 +138,13 @@ func (uh *UserHandlers) Login(w http.ResponseWriter, r *http.Request) {
 func (uh *UserHandlers) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	var req models.UserChangePasswordReq
 
-	login, err := middlewares.GetLogin(r.Context())
-	if err != nil || login == "" {
-		uh.resp.Error(w, http.StatusUnauthorized, "Unauthorized")
-
-		return
-	}
-
-	err = json.NewDecoder(r.Body).Decode(&req)
+	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		uh.log.Error("Json decode error", zap.Error(err))
 		uh.resp.Error(w, http.StatusBadRequest, "Invalid JSON")
 
 		return
 	}
-
-	req.Login = login
 
 	err = uh.service.ChangePassword(r.Context(), req)
 	if err != nil {

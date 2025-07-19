@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/LekcRg/GophKeeper/internal/config"
+	"github.com/LekcRg/GophKeeper/internal/mocks"
 	"github.com/LekcRg/GophKeeper/internal/server/api/response"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -35,7 +36,7 @@ func setupRequestLoggerTest(path string, handler http.Handler) (
 	core, observedLogs := observer.New(zap.InfoLevel)
 	logger := zap.New(core)
 
-	m := New(&config.Config{}, logger, response.NewResponder(logger))
+	m := New(&config.Config{}, logger, response.NewResponder(logger), &mocks.MockUserRepo{})
 
 	mux := http.NewServeMux()
 	mux.Handle(path, m.RequestLogger(handler))

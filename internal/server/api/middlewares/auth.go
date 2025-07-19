@@ -3,67 +3,74 @@ package middlewares
 import (
 	"context"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/LekcRg/GophKeeper/internal/crypto"
 	"github.com/LekcRg/GophKeeper/internal/errs"
-	"go.uber.org/zap"
 )
 
 type key int
 
 const (
-	jwtKey key = iota
+	idKey key = iota
 )
 
 func (m *Middlewares) Authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		token := r.Header.Get("Authorization")
+		key := r.Header.Get("Authorization")
+		key = strings.TrimPrefix(key, "Bearer ")
 
-		if token == "" {
+		if key == "" {
 			m.resp.Error(w, http.StatusUnauthorized, "Unauthorized")
-
 			return
 		}
 
-		claim, err := crypto.ValidJWTToken(token, m.config.Auth.Secret)
+		var (
+			splittedLen = 3
+			splittedKey = strings.SplitN(key, "_", splittedLen)
+		)
+
+		if len(splittedKey) < splittedLen {
+			m.resp.Error(w, http.StatusUnauthorized, "Unauthorized")
+			return
+		}
+
+		id := splittedKey[1]
+		hash := crypto.GenerateAPIHash(splittedKey[2])
+
+		idInt, err := strconv.Atoi(id)
 		if err != nil {
 			m.resp.Error(w, http.StatusUnauthorized, "Unauthorized")
-			m.log.Info("Invalid JWT", zap.Error(err))
-
 			return
 		}
 
-		login, ok := claim["login"]
-		if !ok {
+		user, err := m.userRepo.GetUserByID(r.Context(), idInt)
+		if err != nil {
 			m.resp.Error(w, http.StatusUnauthorized, "Unauthorized")
-			m.log.Error("Login not found in JWT token")
-
 			return
 		}
 
-		loginStr, ok := login.(string)
-		if !ok {
+		if user.KeyHash != hash {
 			m.resp.Error(w, http.StatusUnauthorized, "Unauthorized")
-			m.log.Error("Login not string in JWT token")
-
 			return
 		}
 
-		ctx := AddLoginToCtx(r.Context(), loginStr)
+		ctx := AddIDToCtx(r.Context(), idInt)
 		req := r.WithContext(ctx)
 
 		next.ServeHTTP(w, req)
 	})
 }
 
-func AddLoginToCtx(ctx context.Context, login string) context.Context {
-	return context.WithValue(ctx, jwtKey, login)
+func AddIDToCtx(ctx context.Context, id int) context.Context {
+	return context.WithValue(ctx, idKey, id)
 }
 
-func GetLogin(ctx context.Context) (string, error) {
-	login, ok := ctx.Value(jwtKey).(string)
+func GetID(ctx context.Context) (int, error) {
+	login, ok := ctx.Value(idKey).(int)
 	if !ok {
-		return "", errs.ErrNotValidContextLogin
+		return 0, errs.ErrNotValidContextID
 	}
 
 	return login, nil

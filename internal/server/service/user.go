@@ -26,10 +26,10 @@ func NewUserService(ur repository.UserRepo, cfg *config.Config) *UserService {
 
 func (us *UserService) Register(
 	ctx context.Context, req models.UserReq,
-) (models.TokenUserRes, error) {
+) (models.APIKeyRes, error) {
 	var (
 		err error
-		res models.TokenUserRes
+		res models.APIKeyRes
 	)
 
 	err = valid.Register(&req)
@@ -42,41 +42,70 @@ func (us *UserService) Register(
 		return res, err
 	}
 
-	err = us.repo.CreateUser(ctx, req)
+	random, hash, err := crypto.CreateRandomPartAPIKey(us.config.Auth)
 	if err != nil {
 		return res, err
 	}
 
-	res.Token, err = crypto.CreateJWTToken(req.Login, us.config.Auth)
+	req.KeyHash = hash
+
+	id, err := us.repo.CreateUser(ctx, req)
+	if err != nil {
+		return res, err
+	}
+
+	res.Key = crypto.JoinFullAPIKey(id, random)
 
 	return res, err
 }
 
 func (us *UserService) Login(
 	ctx context.Context, req models.UserReq,
-) (models.TokenUserRes, error) {
-	res := models.TokenUserRes{}
-
+) (int, error) {
 	err := valid.Login(&req)
 	if err != nil {
-		return res, err
+		return 0, err
 	}
 
 	user, err := us.repo.GetUserByLogin(ctx, req.Login)
 	if err != nil {
-		if errors.Is(err, errs.ErrUserWithLoginNotFound) {
-			return res, errs.ErrInvalidCredentials
+		if errors.Is(err, errs.ErrUserNotFound) {
+			return 0, errs.ErrInvalidCredentials
 		}
 
-		return res, err
+		return 0, err
 	}
 
 	isValid := crypto.CheckPasswordHash(req.Password, user.PasswordHash)
 	if !isValid {
-		return res, errs.ErrInvalidCredentials
+		return 0, errs.ErrInvalidCredentials
 	}
 
-	res.Token, err = crypto.CreateJWTToken(user.Login, us.config.Auth)
+	return user.ID, err
+}
+
+func (us *UserService) UpdateAPIKey(ctx context.Context, req models.UserReq) (models.APIKeyRes, error) {
+	res := models.APIKeyRes{}
+
+	id, err := us.Login(ctx, req)
+	if err != nil {
+		return res, err
+	}
+
+	var hash string
+
+	res.Key, hash, err = crypto.CreateFullAPIKey(id, us.config.Auth)
+	if err != nil {
+		return res, err
+	}
+
+	err = us.repo.UpdateUserKey(ctx, models.User{
+		ID:      id,
+		KeyHash: hash,
+	})
+	if err != nil {
+		return res, err
+	}
 
 	return res, err
 }

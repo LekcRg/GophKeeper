@@ -19,13 +19,12 @@ func New(h *handlers.Handlers, m *middlewares.Middlewares) *chi.Mux {
 
 	r.Route("/user", func(cr chi.Router) {
 		cr.Post("/create", h.UserHandlers.Register)
-		cr.Post("/login", h.UserHandlers.Login)
+		cr.Post("/api-key", h.UserHandlers.APIKey)
+		cr.Post("/change-password", h.UserHandlers.ChangePassword)
 	})
 
 	r.Group(func(cr chi.Router) {
 		cr.Use(m.Authenticate)
-
-		cr.Post("/user/change-password", h.UserHandlers.ChangePassword)
 	})
 
 	r.Get("/swagger/*", httpSwagger.Handler(

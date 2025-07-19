@@ -11,15 +11,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestMain(t *testing.T) {
-
-}
-
 func TestCreateUser(t *testing.T) {
+	t.Parallel()
 	pg, container := getPostgres(t)
 	defer terminateContainer(t, container, pg)
 
-	// type test struct{}
 	err := goose.Up(pg.SQL, "../../../../migrations")
 	require.NoError(t, err)
 
@@ -30,13 +26,13 @@ func TestCreateUser(t *testing.T) {
 	hash, err := crypto.HashPassword(password)
 	require.NoError(t, err)
 
-	err = pg.UserRepo.CreateUser(context.Background(), models.UserReq{
+	id, err := pg.UserRepo.CreateUser(context.Background(), models.UserReq{
 		Login:        "user",
 		PasswordHash: hash,
 	})
 	assert.NoError(t, err)
 
-	user, err := pg.UserRepo.GetUserByLogin(context.Background(), login)
+	user, err := pg.UserRepo.GetUserByID(context.Background(), id)
 	assert.NoError(t, err)
 	assert.Equal(t, login, user.Login)
 

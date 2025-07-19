@@ -12,8 +12,10 @@ type DB interface {
 }
 
 type UserRepo interface {
-	CreateUser(ctx context.Context, user models.UserReq) error
+	CreateUser(ctx context.Context, user models.UserReq) (int, error)
 	GetUserByLogin(ctx context.Context, login string) (models.User, error)
+	GetUserByID(ctx context.Context, id int) (models.User, error)
+	UpdateUserKey(ctx context.Context, user models.User) error
 	UpdateUserPassword(ctx context.Context, user models.User) error
 }
 

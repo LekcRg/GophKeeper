@@ -5,13 +5,15 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/LekcRg/GophKeeper/internal/config"
 	"github.com/LekcRg/GophKeeper/internal/crypto"
+	"github.com/LekcRg/GophKeeper/internal/errs"
+	"github.com/LekcRg/GophKeeper/internal/mocks"
+	"github.com/LekcRg/GophKeeper/internal/models"
 	"github.com/LekcRg/GophKeeper/internal/server/api/response"
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 	"resty.dev/v3"
@@ -21,53 +23,52 @@ func TestAuthenticate(t *testing.T) {
 	t.Parallel()
 
 	type test struct {
-		setupToken func() string
-		name       string
-		token      string
-		wantCode   int
+		name     string
+		key      string
+		wantCode int
+		doMock   bool
+		mockErr  error
 	}
 
-	authCfg := config.Auth{Secret: "testsecret", JWTExpire: time.Minute}
+	cfg, err := config.GetConfig([]string{})
+	require.NoError(t, err)
+
+	key, hash, err := crypto.CreateFullAPIKey(1, cfg.Auth)
+	require.NoError(t, err)
 
 	tests := []test{
 		{
 			name:     "success",
 			wantCode: http.StatusOK,
-			setupToken: func() string {
-				token, err := crypto.CreateJWTToken("testuser", authCfg)
-				require.NoError(t, err)
-
-				return token
-			},
+			key:      "Bearer " + key,
+			doMock:   true,
 		},
 		{
-			name:     "without token",
+			name:     "without key",
 			wantCode: http.StatusUnauthorized,
 		},
 		{
-			name:     "invalid token",
-			token:    "invalid",
+			name:     "1 invalid key",
+			key:      "invalid",
 			wantCode: http.StatusUnauthorized,
 		},
 		{
-			name:     "expired token",
-			token:    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTI1ODI0MzMsImxvZ2luIjoidGVzdHVzZXIifQ.DS6RmGjqntbbXpIKE9Ikf0f_jEj4pys3rc-xEjNACkI",
+			name:     "2 invalid key",
+			key:      "sk_1_asdlfkjaskdjfasdf",
+			wantCode: http.StatusUnauthorized,
+			doMock:   true,
+		},
+		{
+			name:     "3 invalid key",
+			key:      "sk_asdfasf_asdlfkjaskdjfasdf",
 			wantCode: http.StatusUnauthorized,
 		},
 		{
-			name:     "without login",
+			name:     "Not found user",
+			key:      "Bearer " + key,
+			doMock:   true,
+			mockErr:  errs.ErrUserNotFound,
 			wantCode: http.StatusUnauthorized,
-			setupToken: func() string {
-				token := jwt.NewWithClaims(jwt.SigningMethodHS256,
-					jwt.MapClaims{
-						"exp": time.Now().Add(authCfg.JWTExpire).Unix(),
-					})
-
-				tokenString, err := token.SignedString([]byte(authCfg.Secret))
-				require.NoError(t, err)
-
-				return tokenString
-			},
 		},
 	}
 
@@ -75,30 +76,33 @@ func TestAuthenticate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			token := tt.token
-			if tt.setupToken != nil {
-				token = "Bearer " + tt.setupToken()
-			} else if token != "" {
-				token = "Bearer " + token
+			log := zaptest.NewLogger(t)
+			repo := mocks.NewMockUserRepo(t)
+
+			if tt.doMock {
+				repo.EXPECT().GetUserByID(mock.Anything, 1).Return(models.User{
+					ID:           1,
+					Login:        "testuser",
+					PasswordHash: "asdf",
+					KeyHash:      hash,
+				}, tt.mockErr)
 			}
 
-			log := zaptest.NewLogger(t)
-			m := New(&config.Config{Auth: authCfg}, log, response.NewResponder(log))
-			server := httptest.NewServer(m.Authenticate(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-				w.WriteHeader(http.StatusOK)
-				_, err := w.Write([]byte("Success"))
-				require.NoError(t, err)
-			})))
+			m := New(cfg, log, response.NewResponder(log), repo)
+			server := httptest.NewServer(m.Authenticate(
+				http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					w.WriteHeader(http.StatusOK)
+					_, err := w.Write([]byte("Success"))
+					require.NoError(t, err)
+				})))
 
 			defer server.Close()
-
-			t.Log(token)
 
 			client := resty.New()
 			defer client.Close()
 
 			res, err := client.R().
-				SetHeader("Authorization", token).
+				SetHeader("Authorization", tt.key).
 				Post(server.URL)
 			require.NoError(t, err)
 
@@ -107,22 +111,22 @@ func TestAuthenticate(t *testing.T) {
 	}
 }
 
-func TestLoginCtx(t *testing.T) {
+func TestIDCtx(t *testing.T) {
 	t.Parallel()
-	t.Run("with login", func(t *testing.T) {
+	t.Run("with ID", func(t *testing.T) {
 		t.Parallel()
 
-		wantLogin := "testlogin"
-		ctx := AddLoginToCtx(context.Background(), wantLogin)
-		login, err := GetLogin(ctx)
+		wantID := 23
+		ctx := AddIDToCtx(context.Background(), wantID)
+		login, err := GetID(ctx)
 		assert.NoError(t, err)
-		assert.Equal(t, wantLogin, login)
+		assert.Equal(t, wantID, login)
 	})
 
-	t.Run("without login", func(t *testing.T) {
+	t.Run("without ID", func(t *testing.T) {
 		t.Parallel()
 
-		_, err := GetLogin(context.Background())
+		_, err := GetID(context.Background())
 		assert.Error(t, err)
 	})
 }

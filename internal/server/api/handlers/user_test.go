@@ -10,17 +10,16 @@ import (
 	"github.com/LekcRg/GophKeeper/internal/config"
 	"github.com/LekcRg/GophKeeper/internal/errs"
 	"github.com/LekcRg/GophKeeper/internal/models"
-	"github.com/LekcRg/GophKeeper/internal/server/api/middlewares"
 	"github.com/LekcRg/GophKeeper/internal/server/api/response"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
+	mock "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 	"resty.dev/v3"
 )
 
-type testLoginRegister struct {
+type testRegister struct {
 	mockSetup func(us *MockUserService)
 	wantErrs  map[string]string
 	name      string
@@ -39,14 +38,14 @@ func TestRegister(t *testing.T) {
 	body, err := json.Marshal(userReq)
 	require.NoError(t, err)
 
-	tests := []testLoginRegister{
+	tests := []testRegister{
 		{
 			name: "success",
 			body: body,
 			mockSetup: func(svc *MockUserService) {
 				svc.EXPECT().
 					Register(mock.Anything, userReq).
-					Return(models.TokenUserRes{Token: "token"}, nil)
+					Return(models.APIKeyRes{Key: "key"}, nil)
 			},
 			wantCode: http.StatusCreated,
 		},
@@ -62,7 +61,7 @@ func TestRegister(t *testing.T) {
 			mockSetup: func(svc *MockUserService) {
 				svc.EXPECT().
 					Register(mock.Anything, userReq).
-					Return(models.TokenUserRes{}, errors.New("Internal"))
+					Return(models.APIKeyRes{}, errors.New("Internal"))
 			},
 			wantCode: http.StatusInternalServerError,
 			wantErrs: map[string]string{"error": "Internal server error"},
@@ -73,7 +72,7 @@ func TestRegister(t *testing.T) {
 			mockSetup: func(svc *MockUserService) {
 				svc.EXPECT().
 					Register(mock.Anything, userReq).
-					Return(models.TokenUserRes{}, errs.ErrLoginAlreadyExists)
+					Return(models.APIKeyRes{}, errs.ErrLoginAlreadyExists)
 			},
 			wantCode: http.StatusConflict,
 			wantErrs: map[string]string{"login": "Login already exists"},
@@ -84,7 +83,7 @@ func TestRegister(t *testing.T) {
 			mockSetup: func(svc *MockUserService) {
 				svc.EXPECT().
 					Register(mock.Anything, userReq).
-					Return(models.TokenUserRes{}, validation.Errors{
+					Return(models.APIKeyRes{}, validation.Errors{
 						"password": errors.New("password requires special character"),
 					})
 			},
@@ -99,53 +98,12 @@ func TestRegister(t *testing.T) {
 			t.Parallel()
 
 			uh, svc := getHandlers(t)
-			loginRegisterRunTest(t, tt, svc, uh.Register)
+			registerRunTest(t, tt, svc, uh.Register)
 		})
 	}
 }
 
-func TestLogin(t *testing.T) {
-	t.Parallel()
-
-	body, err := json.Marshal(userReq)
-	require.NoError(t, err)
-
-	tests := []testLoginRegister{
-		{
-			name: "success",
-			body: body,
-			mockSetup: func(svc *MockUserService) {
-				svc.EXPECT().
-					Login(mock.Anything, userReq).
-					Return(models.TokenUserRes{Token: "token"}, nil)
-			},
-			wantCode: http.StatusCreated,
-		},
-		{
-			name: "Invalid login or password",
-			body: body,
-			mockSetup: func(svc *MockUserService) {
-				svc.EXPECT().
-					Login(mock.Anything, userReq).
-					Return(models.TokenUserRes{}, errs.ErrInvalidCredentials)
-			},
-			wantCode: http.StatusBadRequest,
-			wantErrs: map[string]string{"login": "Invalid login or password"},
-		},
-	}
-
-	for _, ttest := range tests {
-		tt := ttest
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			uh, svc := getHandlers(t)
-			loginRegisterRunTest(t, tt, svc, uh.Login)
-		})
-	}
-}
-
-func loginRegisterRunTest(t *testing.T, tt testLoginRegister, svc *MockUserService, h http.HandlerFunc) {
+func registerRunTest(t *testing.T, tt testRegister, svc *MockUserService, h http.HandlerFunc) {
 	t.Helper()
 
 	server := httptest.NewServer(h)
@@ -159,7 +117,7 @@ func loginRegisterRunTest(t *testing.T, tt testLoginRegister, svc *MockUserServi
 	defer client.Close()
 
 	var (
-		tokenRes = models.TokenUserRes{}
+		tokenRes = models.APIKeyRes{}
 		resErrs  = map[string]string{}
 		res      *resty.Response
 		err      error
@@ -176,7 +134,7 @@ func loginRegisterRunTest(t *testing.T, tt testLoginRegister, svc *MockUserServi
 	assert.Equal(t, tt.wantCode, res.StatusCode())
 
 	if tt.wantCode < 300 {
-		assert.NotEmpty(t, tokenRes.Token)
+		assert.NotEmpty(t, tokenRes.Key)
 	} else {
 		compareErrs(t, tt.wantErrs, resErrs)
 	}
@@ -198,13 +156,12 @@ func TestChangePassword(t *testing.T) {
 		{
 			name:     "success",
 			login:    "testuser",
-			body:     []byte(`{"current-password": "oldPass123!","new-passwrod":"newPass321!"}`),
+			body:     []byte(`{"login": "testuser", "current-password": "oldPass123!","new-passwrod":"newPass321!"}`),
 			wantCode: http.StatusOK,
 			mockSetup: func(tc test, svc *MockUserService) {
 				var req models.UserChangePasswordReq
 				err := json.Unmarshal(tc.body, &req)
 				require.NoError(t, err)
-				req.Login = tc.login
 
 				svc.EXPECT().
 					ChangePassword(mock.Anything, req).
@@ -214,13 +171,12 @@ func TestChangePassword(t *testing.T) {
 		{
 			name:     "validation error",
 			login:    "testuser",
-			body:     []byte(`{"current-password": "oldPass123!"}`),
+			body:     []byte(`{"login": "testuser", "current-password": "oldPass123!"}`),
 			wantCode: http.StatusBadRequest,
 			mockSetup: func(tc test, svc *MockUserService) {
 				var req models.UserChangePasswordReq
 				err := json.Unmarshal(tc.body, &req)
 				require.NoError(t, err)
-				req.Login = tc.login
 
 				svc.EXPECT().
 					ChangePassword(mock.Anything, req).
@@ -242,23 +198,14 @@ func TestChangePassword(t *testing.T) {
 			},
 		},
 		{
-			name:     "unauthorized",
-			body:     []byte(`{"current-password": "oldPass123!"}`),
-			wantCode: http.StatusUnauthorized,
-			wantErrs: map[string]string{
-				"error": "Unauthorized",
-			},
-		},
-		{
 			name:     "service error",
 			login:    "testuser",
-			body:     []byte(`{"current-password": "oldPass123!"}`),
+			body:     []byte(`{"login": "testuser", "current-password": "oldPass123!"}`),
 			wantCode: http.StatusBadRequest,
 			mockSetup: func(tc test, svc *MockUserService) {
 				var req models.UserChangePasswordReq
 				err := json.Unmarshal(tc.body, &req)
 				require.NoError(t, err)
-				req.Login = tc.login
 
 				svc.EXPECT().
 					ChangePassword(mock.Anything, req).
@@ -280,9 +227,7 @@ func TestChangePassword(t *testing.T) {
 			}
 
 			server := httptest.NewServer(
-				injectTestContext(
-					http.HandlerFunc(uh.ChangePassword),
-					tt.login),
+				http.HandlerFunc(uh.ChangePassword),
 			)
 			defer server.Close()
 
@@ -290,7 +235,7 @@ func TestChangePassword(t *testing.T) {
 			defer client.Close()
 
 			var (
-				tokenRes = models.TokenUserRes{}
+				tokenRes = models.Response{}
 				resErrs  = map[string]string{}
 			)
 
@@ -310,20 +255,6 @@ func TestChangePassword(t *testing.T) {
 			}
 		})
 	}
-}
-
-func injectTestContext(h http.Handler, login string) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if login == "" {
-			h.ServeHTTP(w, r)
-
-			return
-		}
-
-		ctx := middlewares.AddLoginToCtx(r.Context(), login)
-		r = r.WithContext(ctx)
-		h.ServeHTTP(w, r)
-	})
 }
 
 func compareErrs(t *testing.T, wantErrs, resErrs map[string]string) {

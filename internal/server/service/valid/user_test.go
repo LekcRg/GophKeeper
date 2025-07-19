@@ -146,7 +146,7 @@ func TestChangePassword(t *testing.T) {
 		{
 			name:     "Without login, current-password, new-password",
 			req:      models.UserChangePasswordReq{},
-			wantErrs: []string{"Login", "current-password", "new-password"},
+			wantErrs: []string{"current-password", "login", "new-password"},
 		},
 		{
 			name: "Without current-password, new-password",

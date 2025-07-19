@@ -1,5 +1,10 @@
 basePath: /
 definitions:
+  models.APIKeyRes:
+    properties:
+      key:
+        type: string
+    type: object
   models.Response:
     properties:
       message:
@@ -10,23 +15,13 @@ definitions:
       error:
         type: string
     type: object
-  models.TokenUserRes:
-    properties:
-      token:
-        type: string
-    type: object
   models.UserChangePasswordReq:
     properties:
       current-password:
         type: string
-      new-password:
-        type: string
-    type: object
-  models.UserError:
-    properties:
       login:
         type: string
-      password:
+      new-password:
         type: string
     type: object
   models.UserReq:
@@ -42,6 +37,36 @@ info:
   title: GophKeeper API
   version: "1.0"
 paths:
+  /user/api-key:
+    post:
+      consumes:
+      - application/json
+      description: Create or update user API Key
+      parameters:
+      - description: Login and password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.APIKeyRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.UserReq'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+      summary: API Key generation
+      tags:
+      - Users
   /user/change-password:
     post:
       consumes:
@@ -63,7 +88,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.ResponseError'
+            $ref: '#/definitions/models.UserChangePasswordReq'
         "500":
           description: Internal Server Error
           schema:
@@ -77,7 +102,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Register user and return JWT token
+      description: Register user and return API Key
       parameters:
       - description: Login and password
         in: body
@@ -91,46 +116,20 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.TokenUserRes'
+            $ref: '#/definitions/models.APIKeyRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.UserReq'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/models.UserError'
+            $ref: '#/definitions/models.UserReq'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.ResponseError'
       summary: Register user
-      tags:
-      - Users
-  /user/login:
-    post:
-      consumes:
-      - application/json
-      description: Authentication and return JWT token
-      parameters:
-      - description: Login and password
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/models.UserReq'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.TokenUserRes'
-        "409":
-          description: Conflict
-          schema:
-            $ref: '#/definitions/models.UserError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.ResponseError'
-      summary: Authentication
       tags:
       - Users
 securityDefinitions:

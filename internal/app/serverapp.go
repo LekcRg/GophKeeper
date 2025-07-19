@@ -69,7 +69,6 @@ func (s *Server) printConfig() {
 
 	cfg := *s.Config
 	cfg.Postgres.Password = redacted
-	cfg.Auth.Secret = redacted
 
 	s.Log.Info("Got config", zap.Any("config", cfg))
 }
@@ -78,7 +77,7 @@ func (s *Server) createRouter() *chi.Mux {
 	svc := service.New(s.db, s.Config)
 	resp := response.NewResponder(s.Log)
 	handl := handlers.New(s.Config, svc, s.Log, resp)
-	middl := middlewares.New(s.Config, s.Log, resp)
+	middl := middlewares.New(s.Config, s.Log, resp, s.db.UserRepo)
 
 	return api.New(handl, middl)
 }

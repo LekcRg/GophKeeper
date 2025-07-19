@@ -1,7 +1,5 @@
 package config
 
-import "time"
-
 type Postgres struct {
 	User     string `yaml:"user" env:"POSTGRES_USER" long:"pg-user" description:"Postgres user"`
 	Password string `yaml:"password" env:"POSTGRES_PASSWORD" long:"pg-pass" description:"Postgres password"`
@@ -13,8 +11,7 @@ type Postgres struct {
 }
 
 type Auth struct {
-	Secret    string        `yaml:"secret_key" env:"SECRET_KEY" short:"k" long:"secret-key" description:"JWT secret key"`
-	JWTExpire time.Duration `yaml:"jwt_expire" env:"JWT_EXPIRE" long:"jwt-expire" description:"JWT experation time"`
+	MaxBytesKey int `yaml:"max_bytes_key" env:"MAX_BYTES_KEY" long:"max-bytes-key" description:"Max bytes of API key"`
 }
 
 type Config struct {

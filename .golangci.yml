@@ -34,7 +34,7 @@ linters:
     - mnd
     - nakedret
     - nestif
-    - nlreturn
+    # - nlreturn
     - noctx
     - nolintlint
     - paralleltest

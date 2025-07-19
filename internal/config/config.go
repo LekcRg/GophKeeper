@@ -48,12 +48,17 @@ func getYamlCfg(path string, cfg *Config) error {
 }
 
 func getDefaultCfg() *Config {
+	const maxBytesKey = 32
+
 	return &Config{
 		Addr: "localhost:8080",
 		Postgres: Postgres{
 			Host:     "localhost",
 			Port:     "5432",
 			MaxConns: "10",
+		},
+		Auth: Auth{
+			MaxBytesKey: maxBytesKey,
 		},
 	}
 }
