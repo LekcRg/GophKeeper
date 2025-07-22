@@ -8,11 +8,13 @@ import (
 )
 
 type Handlers struct {
-	UserHandlers *UserHandlers
+	UserHandlers  *UserHandlers
+	VaultHandlers *VaultHandlers
 }
 
 func New(cfg *config.Config, svc *service.Service, log *zap.Logger, resp *response.Responder) *Handlers {
 	return &Handlers{
-		UserHandlers: NewUserHandlers(cfg, svc.UserService, log, resp),
+		UserHandlers:  NewUserHandlers(cfg, svc.UserService, log, resp),
+		VaultHandlers: NewVaultHandlers(cfg, svc.VaultService, log, resp),
 	}
 }

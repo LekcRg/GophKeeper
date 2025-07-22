@@ -19,8 +19,13 @@ type UserRepo interface {
 	UpdateUserPassword(ctx context.Context, user models.User) error
 }
 
+type VaultRepo interface {
+	CreateItem(ctx context.Context, item models.VaultItem) (models.VaultItem, error)
+}
+
 type Repository struct {
-	DB       DB
-	SQL      *sql.DB
-	UserRepo UserRepo
+	DB        DB
+	SQL       *sql.DB
+	UserRepo  UserRepo
+	VaultRepo VaultRepo
 }

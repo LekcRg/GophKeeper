@@ -6,11 +6,13 @@ import (
 )
 
 type Service struct {
-	UserService *UserService
+	UserService  *UserService
+	VaultService *VaultService
 }
 
 func New(repo *repository.Repository, cfg *config.Config) *Service {
 	return &Service{
-		UserService: NewUserService(repo.UserRepo, cfg),
+		UserService:  NewUserService(repo.UserRepo, cfg),
+		VaultService: NewVaultService(repo.VaultRepo, cfg),
 	}
 }

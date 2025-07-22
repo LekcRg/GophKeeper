@@ -25,5 +25,4 @@ config/server.yaml
 .env
 
 # binaries
-cmd/client/client
-cmd/server/server
+bin/*

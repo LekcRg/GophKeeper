@@ -23,8 +23,11 @@ func New(h *handlers.Handlers, m *middlewares.Middlewares) *chi.Mux {
 		cr.Post("/change-password", h.UserHandlers.ChangePassword)
 	})
 
-	r.Group(func(cr chi.Router) {
-		cr.Use(m.Authenticate)
+	r.Group(func(chiR chi.Router) {
+		chiR.Use(m.Authenticate)
+		chiR.Route("/vault", func(cr chi.Router) {
+			cr.Post("/create", h.VaultHandlers.CreateItem)
+		})
 	})
 
 	r.Get("/swagger/*", httpSwagger.Handler(

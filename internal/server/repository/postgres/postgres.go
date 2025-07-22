@@ -44,9 +44,10 @@ func New(
 	pg.db = db
 
 	return &repository.Repository{
-		DB:       pg,
-		SQL:      nativeDB,
-		UserRepo: NewUserRepo(db),
+		DB:        pg,
+		SQL:       nativeDB,
+		UserRepo:  NewUserRepo(db),
+		VaultRepo: NewVaultRepo(db),
 	}, nil
 }
 

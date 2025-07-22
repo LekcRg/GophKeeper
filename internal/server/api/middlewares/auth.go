@@ -68,10 +68,10 @@ func AddIDToCtx(ctx context.Context, id int) context.Context {
 }
 
 func GetID(ctx context.Context) (int, error) {
-	login, ok := ctx.Value(idKey).(int)
+	id, ok := ctx.Value(idKey).(int)
 	if !ok {
 		return 0, errs.ErrNotValidContextID
 	}
 
-	return login, nil
+	return id, nil
 }

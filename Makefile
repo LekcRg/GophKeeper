@@ -1,5 +1,7 @@
 SERVER_PATH := ./cmd/server
 CLIENT_PATH := ./cmd/client
+BIN_SERVER_PATH := ./bin/server
+BIN_CLIENT_PATH := ./bin/client
 COVERAGE_FILE := cover.out
 NO_MOCKS_COVERAGE_FILE := clean_cover.out
 REMOVE_FROM_COVER := internal/mocks|proto|docs
@@ -21,18 +23,21 @@ run-client:
 run-server:
 	go run $(SERVER_PATH) -c=./config/server.yaml
 
-build-all:
-	go build -o $(CLIENT_PATH)/client $(CLIENT_PATH)
-	go build -o $(SERVER_PATH)/server $(SERVER_PATH)
-
 build-server:
-	go build -o $(SERVER_PATH)/server $(SERVER_PATH)
+	go build -o $(BIN_SERVER_PATH) $(SERVER_PATH)
+
+build-client:
+	go build -o $(BIN_CLIENT_PATH) $(CLIENT_PATH)
+
+build:
+	make build-server
+	make build-client
 
 release-client:
-	go build $(ldflags) -o $(CLIENT_PATH)/client $(CLIENT_PATH)
+	go build $(ldflags) -o $(BIN_CLIENT_PATH) $(CLIENT_PATH)
 
 release-server:
-	go build $(ldflags) -o $(SERVER_PATH)/server $(SERVER_PATH)
+	go build $(ldflags) -o $(BIN_SERVER_PATH) $(SERVER_PATH)
 
 release:
 	make release-client
