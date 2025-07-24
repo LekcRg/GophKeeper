@@ -23,6 +23,9 @@ run-client:
 run-server:
 	go run $(SERVER_PATH) -c=./config/server.yaml
 
+encrypt:
+	go run ./cmd/encrypt
+
 build-server:
 	go build -o $(BIN_SERVER_PATH) $(SERVER_PATH)
 

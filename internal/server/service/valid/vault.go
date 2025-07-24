@@ -9,7 +9,11 @@ import (
 )
 
 func vaultType(value any) error {
-	s, _ := value.(string)
+	s, ok := value.(string)
+	if !ok {
+		return errs.ErrVaultNotCorrectType
+	}
+
 	types := []string{"password", "note", "card", "binary"}
 
 	if !slices.Contains(types, s) {

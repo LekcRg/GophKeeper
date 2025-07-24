@@ -9,6 +9,7 @@ import (
 	"github.com/LekcRg/GophKeeper/internal/config"
 	"github.com/LekcRg/GophKeeper/internal/errs"
 	"github.com/LekcRg/GophKeeper/internal/models"
+	"github.com/LekcRg/GophKeeper/internal/server/api/middlewares"
 	"github.com/LekcRg/GophKeeper/internal/server/api/response"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"go.uber.org/zap"
@@ -16,7 +17,8 @@ import (
 
 type UserService interface {
 	Register(ctx context.Context, req models.UserReq) (models.APIKeyRes, error)
-	UpdateAPIKey(ctx context.Context, req models.UserReq) (models.APIKeyRes, error)
+	GetCryptoParams(ctx context.Context, id int) (models.CryptoParamsRes, error)
+	UpdateAPIKey(ctx context.Context, req models.UserLogin) (models.APIKeyRes, error)
 	ChangePassword(ctx context.Context, req models.UserChangePasswordReq) error
 }
 
@@ -27,7 +29,7 @@ type UserHandlers struct {
 	log     *zap.Logger
 }
 
-type userReqService func(ctx context.Context, req models.UserReq) (models.APIKeyRes, error)
+type userReqService func(ctx context.Context, req models.UserReq) (any, error)
 
 func NewUserHandlers(
 	cfg *config.Config, service UserService, log *zap.Logger, resp *response.Responder,
@@ -40,29 +42,32 @@ func NewUserHandlers(
 	}
 }
 
-func (uh *UserHandlers) userReqHandler(
-	w http.ResponseWriter, r *http.Request,
-	svc userReqService,
+func userReqHandler[T any](
+	w http.ResponseWriter,
+	r *http.Request,
+	log *zap.Logger,
+	resp *response.Responder,
+	handleServiceError func(http.ResponseWriter, error),
+	serviceFunc func(context.Context, T) (models.APIKeyRes, error),
 ) {
-	var reqBody models.UserReq
+	var reqBody T
 
 	err := json.NewDecoder(r.Body).Decode(&reqBody)
 	if err != nil {
-		uh.log.Error("Json decode error", zap.Error(err))
-		uh.resp.Error(w, http.StatusBadRequest, "Invalid JSON")
+		log.Error("Json decode error", zap.Error(err))
+		resp.Error(w, http.StatusBadRequest, "Invalid JSON")
 
 		return
 	}
 	defer r.Body.Close()
 
-	res, err := svc(r.Context(), reqBody)
+	res, err := serviceFunc(r.Context(), reqBody)
 	if err != nil {
-		uh.handleServiceError(w, err)
-
+		handleServiceError(w, err)
 		return
 	}
 
-	uh.resp.JSON(w, http.StatusCreated, res)
+	resp.JSON(w, http.StatusCreated, res)
 }
 
 func (uh *UserHandlers) handleServiceError(w http.ResponseWriter, err error) {
@@ -102,7 +107,13 @@ func (uh *UserHandlers) handleServiceError(w http.ResponseWriter, err error) {
 //
 // Register handles user registration and creating API Key.
 func (uh *UserHandlers) Register(w http.ResponseWriter, r *http.Request) {
-	uh.userReqHandler(w, r, uh.service.Register)
+	userReqHandler(
+		w, r,
+		uh.log,
+		uh.resp,
+		uh.handleServiceError,
+		uh.service.Register,
+	)
 }
 
 // APIKey godoc
@@ -111,15 +122,21 @@ func (uh *UserHandlers) Register(w http.ResponseWriter, r *http.Request) {
 // @Tags         Users
 // @Accept       json
 // @Produce      json
-// @Param        request body models.UserReq true "Login and password"
+// @Param        request body models.UserLogin true "Login and password"
 // @Success      200 {object} models.APIKeyRes
-// @Failure      400 {object} models.UserReq
+// @Failure      400 {object} models.UserLogin
 // @Failure      500 {object} models.ResponseError
 // @Router       /user/api-key [post]
 //
 // APIKey handles create or update user API Key.
 func (uh *UserHandlers) APIKey(w http.ResponseWriter, r *http.Request) {
-	uh.userReqHandler(w, r, uh.service.UpdateAPIKey)
+	userReqHandler(
+		w, r,
+		uh.log,
+		uh.resp,
+		uh.handleServiceError,
+		uh.service.UpdateAPIKey,
+	)
 }
 
 // ChangePassword godoc
@@ -156,4 +173,35 @@ func (uh *UserHandlers) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	uh.resp.JSON(w, http.StatusOK, models.Response{
 		Message: "Password successfully changed",
 	})
+}
+
+// GetCryptoParams godoc
+// @Summary      Get crypto params
+// @Description  Get crypto params
+// @Tags         Users
+// @Accept       json
+// @Produce      json
+// @Success      200 {object} models.CryptoParamsRes
+// @Failure      400 {object} models.UserLogin
+// @Failure      409 {object} models.UserLogin
+// @Failure      500 {object} models.ResponseError
+// @Router       /user/crypto-params [get]
+// @Security     BearerAuth
+//
+// GetCryptoParams handles user registration and creating API Key.
+func (uh *UserHandlers) GetCryptoParams(w http.ResponseWriter, r *http.Request) {
+	id, err := middlewares.GetID(r.Context())
+	if err != nil {
+		uh.resp.Error(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	res, err := uh.service.GetCryptoParams(r.Context(), id)
+	if err != nil {
+		uh.handleServiceError(w, err)
+
+		return
+	}
+
+	uh.resp.JSON(w, http.StatusOK, res)
 }

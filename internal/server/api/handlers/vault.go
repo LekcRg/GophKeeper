@@ -47,7 +47,7 @@ func (vh *VaultHandlers) CreateItem(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	userId, err := middlewares.GetID(r.Context())
+	userID, err := middlewares.GetID(r.Context())
 	if err != nil {
 		vh.resp.Error(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -60,7 +60,7 @@ func (vh *VaultHandlers) CreateItem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	vaultItem, err := vh.service.CreateItem(r.Context(), models.VaultItem{
-		UserID:        userId,
+		UserID:        userID,
 		Name:          req.Name,
 		Type:          req.Type,
 		EncryptedData: enctyptedBytes,
@@ -72,6 +72,7 @@ func (vh *VaultHandlers) CreateItem(w http.ResponseWriter, r *http.Request) {
 
 		vh.log.Info("Create vault service error", zap.Error(err))
 		vh.resp.InternalError(w)
+
 		return
 	}
 

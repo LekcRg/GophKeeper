@@ -23,11 +23,11 @@ func TestAuthenticate(t *testing.T) {
 	t.Parallel()
 
 	type test struct {
+		mockErr  error
 		name     string
 		key      string
 		wantCode int
 		doMock   bool
-		mockErr  error
 	}
 
 	cfg, err := config.GetConfig([]string{})

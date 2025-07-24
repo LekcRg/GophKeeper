@@ -25,8 +25,8 @@ func NewUserRepo(db *sqlx.DB) *UserRepo {
 func (ur *UserRepo) CreateUser(
 	ctx context.Context, reqUser models.UserReq,
 ) (int, error) {
-	query := `INSERT INTO users (login, passhash, key_hash)
-	VALUES (:login, :passhash, :key_hash) RETURNING id`
+	query := `INSERT INTO users (login, passhash, key_hash, encrypted_tag, salt)
+	VALUES (:login, :passhash, :key_hash, :encrypted_tag, :salt) RETURNING id`
 
 	rows, err := ur.db.NamedQueryContext(ctx, query, reqUser)
 	if err != nil {
@@ -54,7 +54,7 @@ func (ur *UserRepo) CreateUser(
 func (ur *UserRepo) GetUserByLogin(
 	ctx context.Context, login string,
 ) (models.User, error) {
-	query := "SELECT login, id, passhash FROM users WHERE login=$1"
+	query := "SELECT * FROM users WHERE login=$1"
 
 	var user models.User
 
@@ -73,7 +73,7 @@ func (ur *UserRepo) GetUserByLogin(
 func (ur *UserRepo) GetUserByID(
 	ctx context.Context, id int,
 ) (models.User, error) {
-	query := "SELECT login, id, passhash, key_hash FROM users WHERE id=$1"
+	query := "SELECT * FROM users WHERE id=$1"
 
 	var user models.User
 

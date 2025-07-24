@@ -28,6 +28,7 @@ func New(h *handlers.Handlers, m *middlewares.Middlewares) *chi.Mux {
 		chiR.Route("/vault", func(cr chi.Router) {
 			cr.Post("/create", h.VaultHandlers.CreateItem)
 		})
+		chiR.Get("/user/crypto-params", h.UserHandlers.GetCryptoParams)
 	})
 
 	r.Get("/swagger/*", httpSwagger.Handler(

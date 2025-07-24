@@ -24,6 +24,31 @@ func NewUserService(ur repository.UserRepo, cfg *config.Config) *UserService {
 	}
 }
 
+func (us *UserService) Login(
+	ctx context.Context, req models.UserLogin,
+) (models.User, error) {
+	err := valid.Login(&req)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	user, err := us.repo.GetUserByLogin(ctx, req.Login)
+	if err != nil {
+		if errors.Is(err, errs.ErrUserNotFound) {
+			return models.User{}, errs.ErrInvalidCredentials
+		}
+
+		return models.User{}, err
+	}
+
+	isValid := crypto.CheckPasswordHash(req.Password, user.PasswordHash)
+	if !isValid {
+		return models.User{}, errs.ErrInvalidCredentials
+	}
+
+	return user, err
+}
+
 func (us *UserService) Register(
 	ctx context.Context, req models.UserReq,
 ) (models.APIKeyRes, error) {
@@ -59,48 +84,25 @@ func (us *UserService) Register(
 	return res, err
 }
 
-func (us *UserService) Login(
-	ctx context.Context, req models.UserReq,
-) (int, error) {
-	err := valid.Login(&req)
-	if err != nil {
-		return 0, err
-	}
-
-	user, err := us.repo.GetUserByLogin(ctx, req.Login)
-	if err != nil {
-		if errors.Is(err, errs.ErrUserNotFound) {
-			return 0, errs.ErrInvalidCredentials
-		}
-
-		return 0, err
-	}
-
-	isValid := crypto.CheckPasswordHash(req.Password, user.PasswordHash)
-	if !isValid {
-		return 0, errs.ErrInvalidCredentials
-	}
-
-	return user.ID, err
-}
-
-func (us *UserService) UpdateAPIKey(ctx context.Context, req models.UserReq) (models.APIKeyRes, error) {
+func (us *UserService) UpdateAPIKey(
+	ctx context.Context, req models.UserLogin,
+) (models.APIKeyRes, error) {
 	res := models.APIKeyRes{}
 
-	id, err := us.Login(ctx, req)
+	user, err := us.Login(ctx, req)
 	if err != nil {
 		return res, err
 	}
 
 	var hash string
 
-	res.Key, hash, err = crypto.CreateFullAPIKey(id, us.config.Auth)
+	res.Key, hash, err = crypto.CreateFullAPIKey(user.ID, us.config.Auth)
 	if err != nil {
 		return res, err
 	}
 
 	err = us.repo.UpdateUserKey(ctx, models.User{
-		ID:      id,
+		ID:      user.ID,
 		KeyHash: hash,
 	})
 	if err != nil {
@@ -110,7 +112,9 @@ func (us *UserService) UpdateAPIKey(ctx context.Context, req models.UserReq) (mo
 	return res, err
 }
 
-func (us *UserService) ChangePassword(ctx context.Context, req models.UserChangePasswordReq) error {
+func (us *UserService) ChangePassword(
+	ctx context.Context, req models.UserChangePasswordReq,
+) error {
 	err := valid.ChangePassword(&req)
 	if err != nil {
 		return err
@@ -139,4 +143,16 @@ func (us *UserService) ChangePassword(ctx context.Context, req models.UserChange
 	}
 
 	return nil
+}
+
+func (us *UserService) GetCryptoParams(ctx context.Context, id int) (models.CryptoParamsRes, error) {
+	user, err := us.repo.GetUserByID(ctx, id)
+	if err != nil {
+		return models.CryptoParamsRes{}, err
+	}
+
+	return models.CryptoParamsRes{
+		Salt:         user.Salt,
+		EncryptedTag: user.EncryptedTag,
+	}, nil
 }

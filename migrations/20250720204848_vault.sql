@@ -7,7 +7,7 @@ CREATE TABLE vault (
   user_id INT REFERENCES users(id) NOT NULL,
   name VARCHAR(30) NOT NULL,
   type vault_type NOT NULL,
-  encrypted_data BYTEA NOT NULL,
+  encrypted_data TEXT,
   created_at timestamp default current_timestamp,
   updated_at timestamp default current_timestamp
 );

@@ -5,6 +5,13 @@ definitions:
       key:
         type: string
     type: object
+  models.CryptoParamsRes:
+    properties:
+      encrypted_tag:
+        type: string
+      salt:
+        type: string
+    type: object
   models.Response:
     properties:
       message:
@@ -24,11 +31,22 @@ definitions:
       new-password:
         type: string
     type: object
-  models.UserReq:
+  models.UserLogin:
     properties:
       login:
         type: string
       password:
+        type: string
+    type: object
+  models.UserReq:
+    properties:
+      encrypted_tag:
+        type: string
+      login:
+        type: string
+      password:
+        type: string
+      salt:
         type: string
     type: object
 info:
@@ -48,7 +66,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/models.UserReq'
+          $ref: '#/definitions/models.UserLogin'
       produces:
       - application/json
       responses:
@@ -59,7 +77,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.UserReq'
+            $ref: '#/definitions/models.UserLogin'
         "500":
           description: Internal Server Error
           schema:
@@ -130,6 +148,35 @@ paths:
           schema:
             $ref: '#/definitions/models.ResponseError'
       summary: Register user
+      tags:
+      - Users
+  /user/crypto-params:
+    get:
+      consumes:
+      - application/json
+      description: Get crypto params
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CryptoParamsRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.UserLogin'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/models.UserLogin'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+      security:
+      - BearerAuth: []
+      summary: Get crypto params
       tags:
       - Users
 securityDefinitions:

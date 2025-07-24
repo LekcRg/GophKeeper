@@ -35,7 +35,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UserReq"
+                            "$ref": "#/definitions/models.UserLogin"
                         }
                     }
                 ],
@@ -49,7 +49,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.UserReq"
+                            "$ref": "#/definitions/models.UserLogin"
                         }
                     },
                     "500": {
@@ -162,6 +162,52 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/user/crypto-params": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get crypto params",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Get crypto params",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.CryptoParamsRes"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.UserLogin"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/models.UserLogin"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ResponseError"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -169,6 +215,17 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "key": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.CryptoParamsRes": {
+            "type": "object",
+            "properties": {
+                "encrypted_tag": {
+                    "type": "string"
+                },
+                "salt": {
                     "type": "string"
                 }
             }
@@ -203,13 +260,30 @@ const docTemplate = `{
                 }
             }
         },
-        "models.UserReq": {
+        "models.UserLogin": {
             "type": "object",
             "properties": {
                 "login": {
                     "type": "string"
                 },
                 "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UserReq": {
+            "type": "object",
+            "properties": {
+                "encrypted_tag": {
+                    "type": "string"
+                },
+                "login": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "salt": {
                     "type": "string"
                 }
             }

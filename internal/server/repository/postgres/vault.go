@@ -2,8 +2,8 @@ package postgres
 
 import (
 	"context"
-	"errors"
 
+	"github.com/LekcRg/GophKeeper/internal/errs"
 	"github.com/LekcRg/GophKeeper/internal/models"
 	"github.com/jmoiron/sqlx"
 )
@@ -31,7 +31,7 @@ func (vr *VaultRepo) CreateItem(ctx context.Context, item models.VaultItem) (mod
 	defer rows.Close()
 
 	if !rows.Next() {
-		return models.VaultItem{}, errors.New("rows not found")
+		return models.VaultItem{}, errs.ErrRepoRowsNotFound
 	}
 
 	err = rows.StructScan(&res)
