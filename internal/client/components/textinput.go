@@ -8,23 +8,28 @@ import (
 
 type TextInputOpts struct {
 	Placeholder string
+	Name        string
+	CharLimit   int
 	IsFocus     bool
 	IsPassword  bool
-	CharLimit   int
 }
 
 type TextInput struct {
+	Name string
 	textinput.Model
 }
 
 const (
 	textCharLimit        = 32
-	textWidth            = 20
+	textWidth            = 30
 	textPasswordEchoChar = '•'
 )
 
 func NewTextInput(opts TextInputOpts) TextInput {
-	ti := TextInput{textinput.New()}
+	ti := TextInput{
+		Model: textinput.New(),
+		Name:  opts.Name,
+	}
 	ti.Cursor.Style = styles.CursorStyle
 
 	if opts.CharLimit > 0 {

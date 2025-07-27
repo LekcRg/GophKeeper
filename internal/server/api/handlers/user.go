@@ -29,8 +29,6 @@ type UserHandlers struct {
 	log     *zap.Logger
 }
 
-type userReqService func(ctx context.Context, req models.UserReq) (any, error)
-
 func NewUserHandlers(
 	cfg *config.Config, service UserService, log *zap.Logger, resp *response.Responder,
 ) *UserHandlers {

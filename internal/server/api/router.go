@@ -2,6 +2,7 @@ package api
 
 import (
 	_ "github.com/LekcRg/GophKeeper/docs" // for swagger documentation.
+	"github.com/LekcRg/GophKeeper/internal/routes"
 	"github.com/LekcRg/GophKeeper/internal/server/api/handlers"
 	"github.com/LekcRg/GophKeeper/internal/server/api/middlewares"
 	"github.com/go-chi/chi/v5"
@@ -17,18 +18,14 @@ func New(h *handlers.Handlers, m *middlewares.Middlewares) *chi.Mux {
 		middleware.AllowContentType("application/json"),
 	)
 
-	r.Route("/user", func(cr chi.Router) {
-		cr.Post("/create", h.UserHandlers.Register)
-		cr.Post("/api-key", h.UserHandlers.APIKey)
-		cr.Post("/change-password", h.UserHandlers.ChangePassword)
-	})
+	r.Post(routes.UserRegister, h.UserHandlers.Register)
+	r.Post(routes.UserUpdateKey, h.UserHandlers.APIKey)
+	r.Post(routes.UserChangePassword, h.UserHandlers.ChangePassword)
 
-	r.Group(func(chiR chi.Router) {
-		chiR.Use(m.Authenticate)
-		chiR.Route("/vault", func(cr chi.Router) {
-			cr.Post("/create", h.VaultHandlers.CreateItem)
-		})
-		chiR.Get("/user/crypto-params", h.UserHandlers.GetCryptoParams)
+	r.Group(func(cr chi.Router) {
+		cr.Use(m.Authenticate)
+		cr.Post(routes.VaultCreateItem, h.VaultHandlers.CreateItem)
+		cr.Get(routes.UserGetCryptoParams, h.UserHandlers.GetCryptoParams)
 	})
 
 	r.Get("/swagger/*", httpSwagger.Handler(

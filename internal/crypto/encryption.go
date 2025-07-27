@@ -33,33 +33,37 @@ func DeriveEncryptionKey(passwordStr string, salt []byte) []byte {
 	)
 
 	var (
-		threads  = uint8(runtime.NumCPU())
-		password = []byte(passwordStr)
+		numCPU         = runtime.NumCPU()
+		threads  uint8 = 4
+		password       = []byte(passwordStr)
 	)
+
+	if numCPU > 0 && numCPU <= 255 {
+		threads = uint8(numCPU)
+	}
 
 	return argon2.IDKey(password, salt, time, memory, threads, keyLen)
 }
 
-func Encrypt(content, key []byte) (string, error) {
+func Encrypt(content, key []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	aesGCM, err := cipher.NewGCM(block)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	nonce := make([]byte, aesGCM.NonceSize())
 	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
-		return "", err
+		return nil, err
 	}
 
 	encrypted := aesGCM.Seal(nonce, nonce, content, nil)
-	b64Encrypted := base64.StdEncoding.EncodeToString(encrypted)
 
-	return b64Encrypted, nil
+	return encrypted, nil
 }
 
 func Decrypt(encryptedString, password string, salt []byte) ([]byte, error) {

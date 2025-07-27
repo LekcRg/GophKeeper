@@ -1,72 +1,29 @@
 package main
 
 import (
-	"log"
-	"os"
-
 	"github.com/LekcRg/GophKeeper/internal/client/views"
+	"github.com/LekcRg/GophKeeper/internal/logger"
 	tea "github.com/charmbracelet/bubbletea"
+	"go.uber.org/zap"
 )
-
-type CurrentView int
-
-const (
-	auth CurrentView = iota
-	list
-)
-
-type model struct {
-	auth *views.AuthModel
-	view CurrentView
-}
-
-func initialModel() model {
-	m := model{
-		auth: views.NewAuth(),
-		view: auth,
-	}
-
-	return m
-}
-
-func (m model) Init() tea.Cmd {
-	return nil
-}
-
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if keyMsg, ok := msg.(tea.KeyMsg); ok {
-		if keyMsg.Type == tea.KeyCtrlC {
-			return m, tea.Quit
-		}
-	}
-
-	// switch m.view {
-	// case auth:
-	// 	var cmd tea.Cmd
-	// 	m.auth, cmd = m.auth.Update(msg)
-
-	// 	return m, cmd
-	// }
-	if m.view == auth {
-		cmd := m.auth.Update(msg)
-
-		return m, cmd
-	}
-
-	return m, nil
-}
-
-func (m model) View() string {
-	if m.view == auth {
-		return m.auth.View()
-	}
-
-	return "Error, ctrl+c to quit"
-}
 
 func main() {
-	if _, err := tea.NewProgram(initialModel(), tea.WithAltScreen()).Run(); err != nil {
-		log.Printf("could not start program: %s\n", err)
-		os.Exit(1)
+	zapLog, err := logger.CreateClientLogger()
+	if err != nil {
+		panic(err)
+	}
+
+	defer func() {
+		err := zapLog.Sync()
+		if err != nil {
+			zapLog.Error("logger.sync error", zap.Error(err))
+		}
+	}()
+
+	v := views.New(zapLog)
+
+	_, err = tea.NewProgram(v, tea.WithAltScreen()).Run()
+	if err != nil {
+		panic(err)
 	}
 }

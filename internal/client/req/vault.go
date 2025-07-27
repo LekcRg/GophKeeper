@@ -3,7 +3,7 @@ package req
 import (
 	"context"
 	"errors"
-	"fmt"
+	"log"
 
 	"github.com/LekcRg/GophKeeper/internal/models"
 )
@@ -17,6 +17,7 @@ func (r *Request) CreateVaultItem(
 	)
 
 	_, err := r.client.R().
+		SetContext(ctx).
 		SetBody(item).
 		SetResult(&res).
 		SetError(&resErrs).
@@ -26,7 +27,7 @@ func (r *Request) CreateVaultItem(
 	}
 
 	if len(resErrs) > 0 {
-		fmt.Println(resErrs)
+		log.Println(resErrs)
 		return models.VaultItem{}, errors.New("req error")
 	}
 

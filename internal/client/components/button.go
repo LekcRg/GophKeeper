@@ -9,6 +9,7 @@ import (
 
 type Button struct {
 	Label   string
+	Name    string
 	Focused bool
 }
 

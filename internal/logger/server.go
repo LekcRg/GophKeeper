@@ -5,7 +5,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func CreateLogger(cfg *config.Config) (*zap.Logger, error) {
+func CreateServerLogger(cfg *config.Config) (*zap.Logger, error) {
 	var (
 		logger *zap.Logger
 		err    error

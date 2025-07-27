@@ -1,6 +1,26 @@
 package req
 
-import "resty.dev/v3"
+import (
+	"resty.dev/v3"
+)
+
+type ResError struct {
+	Errors map[string]string
+}
+
+func (e *ResError) Error() string {
+	errText := "response errors: "
+
+	for key, val := range e.Errors {
+		if val == "" {
+			continue
+		}
+
+		errText += key + ":" + val + " "
+	}
+
+	return errText
+}
 
 type Request struct {
 	client *resty.Client

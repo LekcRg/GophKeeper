@@ -26,3 +26,6 @@ config/server.yaml
 
 # binaries
 bin/*
+
+# logs
+output.log

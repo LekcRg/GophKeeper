@@ -36,7 +36,7 @@ func NewServerApp(ctx context.Context) (*Server, error) {
 		return nil, err
 	}
 
-	log, err := logger.CreateLogger(cfg)
+	log, err := logger.CreateServerLogger(cfg)
 	if err != nil {
 		return nil, err
 	} else if log == nil {
