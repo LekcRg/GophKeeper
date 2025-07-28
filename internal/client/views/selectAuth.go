@@ -6,38 +6,44 @@ import (
 	"github.com/LekcRg/GophKeeper/internal/client/components"
 	"github.com/LekcRg/GophKeeper/internal/client/components/help"
 	"github.com/LekcRg/GophKeeper/internal/client/msgs"
+	"github.com/LekcRg/GophKeeper/internal/client/nav"
+	"github.com/LekcRg/GophKeeper/internal/client/styles"
+	"github.com/LekcRg/GophKeeper/internal/server/service/valid"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 type SelectAuthModel struct {
-	tea.Model
-	input      components.TextInput
-	buttons    []components.Button
-	focusIndex int
-	help       *help.SelectAuth
+	help  *help.SelectAuth
+	error string
+	nav   nav.Navigation
 }
 
-func NewSelectAuth() *SelectAuthModel {
+func NewSelectAuth(addr string) tea.Model {
 	m := &SelectAuthModel{
-		buttons: []components.Button{
-			{
-				Label: "Register",
-				Name:  "register",
+		nav: nav.Navigation{
+			Inputs: []components.TextInput{
+				components.NewTextInput(components.TextInputOpts{
+					Placeholder: "Server address",
+					Name:        "address",
+					IsFocus:     true,
+					Value:       addr,
+				}),
 			},
-			{
-				Label: "Login with token",
-				Name:  "token",
-			},
-			{
-				Label: "Update and get new token",
-				Name:  "update-token",
+			Buttons: []components.Button{
+				{
+					Label: "Register",
+					Name:  "register",
+				},
+				{
+					Label: "Login with token",
+					Name:  "token",
+				},
+				{
+					Label: "Update and get new token",
+					Name:  "update-token",
+				},
 			},
 		},
-		input: components.NewTextInput(components.TextInputOpts{
-			Placeholder: "Server address",
-			Name:        "address",
-			IsFocus:     true,
-		}),
 		help: help.NewSelectAuth(),
 	}
 
@@ -48,60 +54,62 @@ func (m *SelectAuthModel) Init() tea.Cmd {
 	return nil
 }
 
-func (m *SelectAuthModel) handleKeyPress(keyMsg tea.KeyMsg) tea.Cmd {
-	switch keyMsg.String() {
-	case "enter":
-		if m.focusIndex != 0 {
-			return func() tea.Msg {
-				return msgs.SelectAuthMsg(m.buttons[m.focusIndex-1].Name)
-			}
+func (m *SelectAuthModel) Submit() tea.Cmd {
+	addr := m.nav.Inputs[0].Value()
+
+	err := valid.ValidAddr(addr)
+	if err != nil {
+		m.error = err.Error()
+
+		return nil
+	}
+
+	return func() tea.Msg {
+		return msgs.SelectAuthMsg{
+			Selected: m.nav.GetCurrentButton().Name,
+			Address:  addr,
 		}
-	case "up":
-		m.focusIndex--
-	case "down":
-		m.focusIndex++
 	}
-
-	lastIndex := len(m.buttons)
-	if m.focusIndex > lastIndex {
-		m.focusIndex = 0
-	} else if m.focusIndex < 0 {
-		m.focusIndex = lastIndex
-	}
-
-	return nil
 }
 
-func (m *SelectAuthModel) Update(msg tea.Msg) tea.Cmd {
+func (m *SelectAuthModel) updateInputs(msg tea.Msg) []tea.Cmd {
+	cmds := make([]tea.Cmd, len(m.nav.Inputs))
+	for i := range m.nav.Inputs {
+		cmds[i] = m.nav.Inputs[i].Update(msg)
+	}
+
+	return cmds
+}
+
+func (m *SelectAuthModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		return tea.Batch(m.input.Update(msg), m.handleKeyPress(msg))
+		inputCmds := m.updateInputs(msg)
+		navCmds := m.nav.HandleKeyPress(msg)
+
+		if msg.Type == tea.KeyEnter && m.nav.IsOnButton() {
+			btn := m.nav.GetCurrentButton()
+			if btn != nil {
+				return m, m.Submit()
+			}
+		}
+
+		return m, tea.Batch(append(inputCmds, navCmds...)...)
 	default:
-		return nil
+		return m, nil
 	}
 }
 
 func (m *SelectAuthModel) View() string {
 	var b strings.Builder
 
-	if m.focusIndex == 0 {
-		m.input.Focus()
-	} else {
-		m.input.Blur()
-	}
-
 	b.WriteRune('\n')
-	b.WriteString(m.input.View())
+	b.WriteString(m.nav.Inputs[0].View())
+	b.WriteString(styles.ErrorStyle.Render(m.error))
 	b.WriteString("\n\n")
 
-	for i := 0; i < len(m.buttons); i++ {
-		if i == m.focusIndex-1 {
-			m.buttons[i].Focus()
-		} else {
-			m.buttons[i].Blur()
-		}
-
-		b.WriteString(m.buttons[i].View())
+	for _, btn := range m.nav.Buttons {
+		b.WriteString(btn.View())
 		b.WriteRune('\n')
 	}
 

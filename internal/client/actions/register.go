@@ -6,6 +6,7 @@ import (
 
 	"github.com/LekcRg/GophKeeper/internal/crypto"
 	"github.com/LekcRg/GophKeeper/internal/models"
+	"go.uber.org/zap"
 )
 
 func (a *Actions) Register(
@@ -13,7 +14,8 @@ func (a *Actions) Register(
 ) (models.ClientRegisterResponse, error) {
 	salt, err := crypto.GenEncryptionSalt()
 	if err != nil {
-		panic(err)
+		a.log.Error("error generating salt", zap.Error(err))
+		return models.ClientRegisterResponse{}, err
 	}
 
 	saltStr := base64.StdEncoding.EncodeToString(salt)
@@ -21,7 +23,8 @@ func (a *Actions) Register(
 
 	encTag, err := crypto.Encrypt([]byte(crypto.TagContent), key)
 	if err != nil {
-		panic(err)
+		a.log.Error("error generating encrypted tag", zap.Error(err))
+		return models.ClientRegisterResponse{}, err
 	}
 
 	encTagString := base64.StdEncoding.EncodeToString(encTag)
@@ -35,6 +38,7 @@ func (a *Actions) Register(
 
 	apiKey, err := a.req.UserRegister(ctx, reqVals)
 	if err != nil {
+		a.log.Error("User register request error", zap.Error(err))
 		return models.ClientRegisterResponse{}, err
 	}
 

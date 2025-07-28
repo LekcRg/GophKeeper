@@ -1,6 +1,7 @@
 package req
 
 import (
+	"github.com/LekcRg/GophKeeper/internal/config"
 	"resty.dev/v3"
 )
 
@@ -24,11 +25,13 @@ func (e *ResError) Error() string {
 
 type Request struct {
 	client *resty.Client
+	config *config.ClientConfig
 }
 
-func New() *Request {
+func New(cfg *config.ClientConfig) *Request {
 	return &Request{
 		client: resty.New(),
+		config: cfg,
 	}
 }
 

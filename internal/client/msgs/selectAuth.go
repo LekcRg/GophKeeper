@@ -1,3 +1,6 @@
 package msgs
 
-type SelectAuthMsg string
+type SelectAuthMsg struct {
+	Address  string
+	Selected string
+}

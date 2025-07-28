@@ -22,7 +22,7 @@ func NewSelectAuth() *SelectAuth {
 				key.WithHelp("↓", "move down"),
 			),
 			Select: key.NewBinding(
-				key.WithKeys("ctrl+z"),
+				key.WithKeys("enter"),
 				key.WithHelp("enter", "select"),
 			),
 			Quit: key.NewBinding(

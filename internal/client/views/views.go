@@ -4,36 +4,44 @@ import (
 	"github.com/LekcRg/GophKeeper/internal/client/actions"
 	"github.com/LekcRg/GophKeeper/internal/client/msgs"
 	"github.com/LekcRg/GophKeeper/internal/client/req"
-	"github.com/LekcRg/GophKeeper/internal/models"
+	"github.com/LekcRg/GophKeeper/internal/client/router"
+	"github.com/LekcRg/GophKeeper/internal/config"
+	"github.com/LekcRg/GophKeeper/internal/errs"
 	tea "github.com/charmbracelet/bubbletea"
 	"go.uber.org/zap"
 )
 
-type CurrentView int
-
-const (
-	selectAuth CurrentView = iota
-	register
-	tokenAuth
-	updateToken
-	list
-)
-
 type Views struct {
-	// tea.Model
-	selectAuth   *SelectAuthModel
-	register     *RegisterModel
-	view         CurrentView
-	securityData models.ClientRegisterResponse
+	router  router.ViewRouter
+	actions *actions.Actions
+	log     *zap.Logger
+	// view    router.CurrentView
 }
 
-func New(logger *zap.Logger) *Views {
-	request := req.New()
-	acts := actions.New(request, logger)
+func New(logger *zap.Logger, cfg *config.ClientConfig) *Views {
+	request := req.New(cfg)
+	acts := actions.New(request, logger, cfg)
+
+	currentView := router.SelectAuthView
+	if cfg != nil && cfg.Key != "" {
+		currentView = router.ListView
+	}
+
+	addr := ""
+	if cfg != nil && cfg.Address != "" {
+		addr = cfg.Address
+	}
+
+	v := router.Views{
+		router.SelectAuthView: NewSelectAuth(addr),
+		router.RegisterView:   NewRegister(acts, logger),
+	}
+
 	m := &Views{
-		register:   NewAuth(acts, logger),
-		selectAuth: NewSelectAuth(),
-		view:       selectAuth,
+		router: *router.NewViewRouter(currentView, v),
+		// view:    currentView,
+		actions: acts,
+		log:     logger,
 	}
 
 	return m
@@ -43,32 +51,44 @@ func (m *Views) Init() tea.Cmd {
 	return nil
 }
 
-func (m *Views) registerUpdate(msg tea.Msg) tea.Cmd {
+func (m *Views) successRegister(msg tea.Msg) tea.Cmd {
 	successMsg, ok := msg.(msgs.RegisterSuccessMsg)
 	if ok {
-		m.securityData = successMsg.Res
-		m.view = tokenAuth
+		err := m.actions.UpdateConfigCredentials(successMsg.Res)
+		if err != nil {
+			m.log.Error("Update credentials config err", zap.Error(err))
+
+			return func() tea.Msg {
+				return msgs.ErrorMsg(err)
+			}
+		}
+
+		m.router.SwitchTo(router.TokenAuthView)
+
+		return nil
 	}
 
-	cmd := m.register.Update(msg)
+	m.log.Error("successRegister type is not msgs.RegisterSuccessMsg")
 
-	return cmd
+	return func() tea.Msg {
+		return msgs.ErrorMsg(errs.ErrInvalidType)
+	}
 }
 
 func (m *Views) selectAuthView(msg msgs.SelectAuthMsg) {
-	view := string(msg)
-	switch view {
-	case "register":
-		m.view = register
-	case "token":
-		m.view = tokenAuth
-	case "update-token":
-		m.view = updateToken
+	err := m.actions.UpdateConfigAddress(msg.Address)
+	if err != nil {
+		m.log.Error("Update address config err", zap.Error(err))
 	}
-}
 
-func (m *Views) isAuthenticationView() bool {
-	return m.view == register || m.view == tokenAuth || m.view == updateToken
+	switch msg.Selected {
+	case "register":
+		m.router.SwitchTo(router.RegisterView)
+	case "token":
+		m.router.SwitchTo(router.TokenAuthView)
+	case "update-token":
+		m.router.SwitchTo(router.UpdateTokenView)
+	}
 }
 
 func (m *Views) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -78,33 +98,33 @@ func (m *Views) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 
-		if typeMsg.Type == tea.KeyEsc && m.isAuthenticationView() {
-			m.view = selectAuth
+		if typeMsg.Type == tea.KeyEsc && m.router.IsAuthenticationView() {
+			m.router.SwitchTo(router.SelectAuthView)
 			return m, nil
 		}
 	case msgs.SelectAuthMsg:
 		m.selectAuthView(typeMsg)
 		return m, nil
 	case msgs.RegisterSuccessMsg:
-		return m, nil
+		m.log.Info("!!!!!!!!!")
+		return m, m.successRegister(typeMsg)
 	}
 
-	switch m.view {
-	case selectAuth:
-		return m, m.selectAuth.Update(msg)
-	case register:
-		return m, m.registerUpdate(msg)
+	currentView := m.router.Current()
+	if currentView != nil {
+		newCurrentM, cmd := currentView.Update(msg)
+		m.router.SetCurrentModel(newCurrentM)
+
+		return m, cmd
 	}
 
 	return m, nil
 }
 
 func (m *Views) View() string {
-	switch m.view {
-	case selectAuth:
-		return m.selectAuth.View()
-	case register:
-		return m.register.View()
+	currentView := m.router.Current()
+	if currentView != nil {
+		return currentView.View()
 	}
 
 	return "Error, ctrl+c to quit"

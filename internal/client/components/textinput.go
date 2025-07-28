@@ -12,6 +12,7 @@ type TextInputOpts struct {
 	CharLimit   int
 	IsFocus     bool
 	IsPassword  bool
+	Value       string
 }
 
 type TextInput struct {
@@ -31,6 +32,10 @@ func NewTextInput(opts TextInputOpts) TextInput {
 		Name:  opts.Name,
 	}
 	ti.Cursor.Style = styles.CursorStyle
+
+	if opts.Value != "" {
+		ti.SetValue(opts.Value)
+	}
 
 	if opts.CharLimit > 0 {
 		ti.CharLimit = opts.CharLimit

@@ -1,3 +1,3 @@
 package msgs
 
-type GoBackMsg struct{}
+type ErrorMsg error
