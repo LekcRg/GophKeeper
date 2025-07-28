@@ -7,8 +7,8 @@ type CurrentView string
 type Views map[CurrentView]tea.Model
 
 type ViewRouter struct {
-	currentView CurrentView
 	views       Views
+	currentView CurrentView
 }
 
 const (

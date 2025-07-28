@@ -9,10 +9,10 @@ import (
 type TextInputOpts struct {
 	Placeholder string
 	Name        string
+	Value       string
 	CharLimit   int
 	IsFocus     bool
 	IsPassword  bool
-	Value       string
 }
 
 type TextInput struct {

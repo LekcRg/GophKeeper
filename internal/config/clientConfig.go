@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/base64"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -10,10 +11,12 @@ import (
 )
 
 type ClientConfig struct {
-	Address      string `yaml:"address"`
-	Key          string `yaml:"key"`
-	EnctyptedTag []byte `yaml:"encrypted_tag"`
-	Salt         []byte `yaml:"salt"`
+	Address            string `yaml:"address"`
+	Key                string `yaml:"key"`
+	EncryptedTagString string `yaml:"encrypted_tag"`
+	SaltString         string `yaml:"salt"`
+	EnctyptedTag       []byte `yaml:"-"`
+	Salt               []byte `yaml:"-"`
 }
 
 const (
@@ -80,6 +83,20 @@ func GetClientConfig() (*ClientConfig, error) {
 		return emptyCfg, err
 	}
 
+	if cfg.SaltString != "" {
+		cfg.Salt, err = base64.StdEncoding.DecodeString(cfg.SaltString)
+		if err != nil {
+			return emptyCfg, err
+		}
+	}
+
+	if cfg.EncryptedTagString != "" {
+		cfg.Salt, err = base64.StdEncoding.DecodeString(cfg.EncryptedTagString)
+		if err != nil {
+			return emptyCfg, err
+		}
+	}
+
 	return &cfg, nil
 }
 
@@ -108,6 +125,14 @@ func (c *ClientConfig) updateConfigFile() error {
 
 	defer f.Close()
 
+	if len(c.Salt) > 0 {
+		c.SaltString = base64.StdEncoding.EncodeToString(c.Salt)
+	}
+
+	if len(c.EnctyptedTag) > 0 {
+		c.EncryptedTagString = base64.StdEncoding.EncodeToString(c.EnctyptedTag)
+	}
+
 	err = yaml.NewEncoder(f).Encode(c)
 	if err != nil {
 		return fmt.Errorf(
@@ -124,8 +149,4 @@ func (c *ClientConfig) Update(f func(cfg *ClientConfig)) error {
 	f(c)
 
 	return c.updateConfigFile()
-}
-
-func wrapSaveErr(path string, err error) error {
-	return fmt.Errorf("failed to save config.\nTry deleting the file at:\n  %s\nand restarting the app, or report this issue.\n\nDetails: %w", path, err)
 }

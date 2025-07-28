@@ -6,9 +6,9 @@ import (
 )
 
 type Navigation struct {
-	focusIndex int
 	Inputs     []components.TextInput
 	Buttons    []components.Button
+	focusIndex int
 }
 
 func (n *Navigation) lastIndex() int {

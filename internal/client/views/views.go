@@ -11,9 +11,9 @@ import (
 )
 
 type Views struct {
-	router  router.ViewRouter
 	actions *actions.Actions
 	log     *zap.Logger
+	router  router.ViewRouter
 }
 
 func New(logger *zap.Logger, cfg *config.ClientConfig) *Views {

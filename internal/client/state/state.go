@@ -6,10 +6,10 @@ import (
 )
 
 type State struct {
+	repo            *repository.Repository
+	ActiveVaultItem string
 	Config          config.ClientConfig
 	Vault           []string
-	ActiveVaultItem string
-	repo            *repository.Repository
 }
 
 func New(repo *repository.Repository) *State {

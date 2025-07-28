@@ -10,8 +10,8 @@ import (
 
 type Errors struct {
 	fields      map[string]string
-	Message     string
 	knownFields map[string]bool // поля, которые должны отображаться как field errors
+	Message     string
 }
 
 func NewErrors(knownFields []string) *Errors {
