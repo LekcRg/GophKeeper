@@ -2,7 +2,7 @@ package router
 
 import tea "github.com/charmbracelet/bubbletea"
 
-type CurrentView int
+type CurrentView string
 
 type Views map[CurrentView]tea.Model
 
@@ -12,11 +12,11 @@ type ViewRouter struct {
 }
 
 const (
-	SelectAuthView CurrentView = iota
-	RegisterView
-	TokenAuthView
-	UpdateTokenView
-	ListView
+	SelectAuthView  CurrentView = "select-auth"
+	RegisterView    CurrentView = "register"
+	TokenAuthView   CurrentView = "token"
+	UpdateTokenView CurrentView = "update-token"
+	ListView        CurrentView = "list"
 )
 
 func NewViewRouter(current CurrentView, v Views) *ViewRouter {

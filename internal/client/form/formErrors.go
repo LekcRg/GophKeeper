@@ -43,6 +43,16 @@ func (e *Errors) GetFieldError(field string) string {
 	return e.fields[field]
 }
 
+func (e *Errors) HandleError(err error, key string) {
+	errText := err.Error()
+	if e.knownFields[key] {
+		e.setFieldError(key, errText)
+		return
+	}
+
+	e.setMessage(errText)
+}
+
 func (e *Errors) HandleAPIError(err error) {
 	var resErr *req.ResError
 	if !errors.As(err, &resErr) || resErr == nil || resErr.Errors == nil {

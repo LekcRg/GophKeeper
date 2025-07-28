@@ -28,11 +28,13 @@ func (a *Actions) UpdateConfigAddress(addr string) error {
 }
 
 func (a *Actions) UpdateConfigCredentials(c models.ClientRegisterResponse) error {
-	return a.config.Update(func(cfg *config.ClientConfig) {
+	err := a.config.Update(func(cfg *config.ClientConfig) {
 		cfg.EnctyptedTag = c.Tag
 		cfg.Salt = c.Salt
 		cfg.Key = c.Key
 	})
+
+	return err
 }
 
 func (a *Actions) SaveConfig(config.ClientConfig) error {

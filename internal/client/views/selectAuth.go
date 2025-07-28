@@ -5,17 +5,20 @@ import (
 
 	"github.com/LekcRg/GophKeeper/internal/client/components"
 	"github.com/LekcRg/GophKeeper/internal/client/components/help"
+	"github.com/LekcRg/GophKeeper/internal/client/form"
 	"github.com/LekcRg/GophKeeper/internal/client/msgs"
 	"github.com/LekcRg/GophKeeper/internal/client/nav"
+	"github.com/LekcRg/GophKeeper/internal/client/router"
 	"github.com/LekcRg/GophKeeper/internal/client/styles"
 	"github.com/LekcRg/GophKeeper/internal/server/service/valid"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 type SelectAuthModel struct {
-	help  *help.SelectAuth
-	error string
-	nav   nav.Navigation
+	help   *help.SelectAuth
+	error  string
+	errors *form.Errors
+	nav    nav.Navigation
 }
 
 func NewSelectAuth(addr string) tea.Model {
@@ -32,19 +35,22 @@ func NewSelectAuth(addr string) tea.Model {
 			Buttons: []components.Button{
 				{
 					Label: "Register",
-					Name:  "register",
+					Name:  string(router.RegisterView),
 				},
 				{
 					Label: "Login with token",
-					Name:  "token",
+					Name:  string(router.TokenAuthView),
 				},
 				{
 					Label: "Update and get new token",
-					Name:  "update-token",
+					Name:  string(router.UpdateTokenView),
 				},
 			},
 		},
 		help: help.NewSelectAuth(),
+		errors: form.NewErrors([]string{
+			"address",
+		}),
 	}
 
 	return m
@@ -59,7 +65,7 @@ func (m *SelectAuthModel) Submit() tea.Cmd {
 
 	err := valid.ValidAddr(addr)
 	if err != nil {
-		m.error = err.Error()
+		m.errors.HandleError(err, m.nav.Inputs[0].Name)
 
 		return nil
 	}
@@ -95,17 +101,25 @@ func (m *SelectAuthModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		return m, tea.Batch(append(inputCmds, navCmds...)...)
-	default:
-		return m, nil
+	case msgs.ErrorMsg:
+		m.errors.HandleError(msg, "")
 	}
+
+	return m, nil
 }
 
 func (m *SelectAuthModel) View() string {
 	var b strings.Builder
 
 	b.WriteRune('\n')
-	b.WriteString(m.nav.Inputs[0].View())
-	b.WriteString(styles.ErrorStyle.Render(m.error))
+
+	for _, input := range m.nav.Inputs {
+		b.WriteString(input.View())
+		b.WriteString(styles.ErrorStyle.Render(
+			m.errors.GetFieldError(input.Name),
+		))
+	}
+
 	b.WriteString("\n\n")
 
 	for _, btn := range m.nav.Buttons {
@@ -113,8 +127,8 @@ func (m *SelectAuthModel) View() string {
 		b.WriteRune('\n')
 	}
 
+	b.WriteString(styles.ErrorStyle.Render(m.errors.Message))
 	b.WriteString("\n")
-
 	b.WriteString(m.help.View())
 
 	return b.String()
