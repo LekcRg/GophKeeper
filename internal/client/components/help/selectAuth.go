@@ -14,12 +14,12 @@ func NewSelectAuth() *SelectAuth {
 	return &SelectAuth{
 		keys: &SelectAuthKeyMap{
 			Up: key.NewBinding(
-				key.WithKeys("up"),
-				key.WithHelp("↑", "move up"),
+				key.WithKeys("up", "shift+tab"),
+				key.WithHelp("↑/Shift+Tab", "move up"),
 			),
 			Down: key.NewBinding(
-				key.WithKeys("down"),
-				key.WithHelp("↓", "move down"),
+				key.WithKeys("down", "tab"),
+				key.WithHelp("↓/Tab", "move down"),
 			),
 			Select: key.NewBinding(
 				key.WithKeys("enter"),

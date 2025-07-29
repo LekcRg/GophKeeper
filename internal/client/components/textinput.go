@@ -12,6 +12,7 @@ type TextInputOpts struct {
 	Name        string
 	Value       string
 	CharLimit   int
+	Width       int
 	IsFocus     bool
 	IsPassword  bool
 	Valid       []validation.Rule
@@ -24,7 +25,7 @@ type TextInput struct {
 }
 
 const (
-	textCharLimit        = 32
+	textCharLimit        = 60
 	textWidth            = 30
 	textPasswordEchoChar = '•'
 )
@@ -48,7 +49,11 @@ func NewTextInput(opts TextInputOpts) TextInput {
 	}
 
 	ti.Placeholder = opts.Placeholder
+
 	ti.Width = textWidth
+	if opts.Width > 0 {
+		ti.Width = opts.Width
+	}
 
 	if opts.IsFocus {
 		ti.Focus()

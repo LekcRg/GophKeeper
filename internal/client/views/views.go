@@ -30,8 +30,10 @@ func New(logger *zap.Logger, cfg *config.ClientConfig) *Views {
 	}
 
 	v := router.Views{
-		router.SelectAuthView: NewSelectAuth(cfg.Address, logger),
-		router.RegisterView:   NewRegister(acts, logger),
+		router.SelectAuthView:  NewSelectAuth(cfg.Address),
+		router.RegisterView:    NewRegister(acts, logger),
+		router.TokenAuthView:   NewKeyAuth(acts),
+		router.UpdateTokenView: NewUpdateKey(acts),
 	}
 
 	m := &Views{
@@ -44,7 +46,7 @@ func New(logger *zap.Logger, cfg *config.ClientConfig) *Views {
 }
 
 func (m *Views) Init() tea.Cmd {
-	return nil
+	return m.router.Init()
 }
 
 func (m *Views) handleRegisterSuccess(successMsg msgs.RegisterSuccessMsg) tea.Cmd {
@@ -57,9 +59,7 @@ func (m *Views) handleRegisterSuccess(successMsg msgs.RegisterSuccessMsg) tea.Cm
 		}
 	}
 
-	m.router.SwitchTo(router.TokenAuthView)
-
-	return nil
+	return m.router.SwitchTo(router.TokenAuthView)
 }
 
 func (m *Views) handleSelectAuth(msg msgs.SelectAuthMsg) tea.Cmd {
@@ -72,9 +72,7 @@ func (m *Views) handleSelectAuth(msg msgs.SelectAuthMsg) tea.Cmd {
 		}
 	}
 
-	m.router.SwitchTo(router.CurrentView(msg.Selected))
-
-	return nil
+	return m.router.SwitchTo(router.CurrentView(msg.Selected))
 }
 
 func (m *Views) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -85,13 +83,14 @@ func (m *Views) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		if typeMsg.Type == tea.KeyEsc && m.router.IsAuthenticationView() {
-			m.router.SwitchTo(router.SelectAuthView)
-			return m, nil
+			return m, m.router.SwitchTo(router.SelectAuthView)
 		}
 	case msgs.SelectAuthMsg:
 		return m, m.handleSelectAuth(typeMsg)
 	case msgs.RegisterSuccessMsg:
 		return m, m.handleRegisterSuccess(typeMsg)
+	case msgs.UpdateKeySuccessMsg:
+		return m, m.router.SwitchTo(router.SelectAuthView)
 	}
 
 	currentView := m.router.Current()

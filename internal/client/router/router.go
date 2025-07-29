@@ -26,14 +26,19 @@ func NewViewRouter(current CurrentView, v Views) *ViewRouter {
 	}
 }
 
+func (r *ViewRouter) Init() tea.Cmd {
+	return r.Current().Init()
+}
+
 func (r *ViewRouter) IsAuthenticationView() bool {
 	return r.currentView == RegisterView ||
 		r.currentView == TokenAuthView ||
 		r.currentView == UpdateTokenView
 }
 
-func (r *ViewRouter) SwitchTo(view CurrentView) {
+func (r *ViewRouter) SwitchTo(view CurrentView) tea.Cmd {
 	r.currentView = view
+	return r.Init()
 }
 
 func (r *ViewRouter) Current() tea.Model {

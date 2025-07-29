@@ -8,20 +8,19 @@ import (
 	"github.com/LekcRg/GophKeeper/internal/client/nav"
 	"github.com/LekcRg/GophKeeper/internal/client/styles"
 	"github.com/LekcRg/GophKeeper/internal/server/service/valid"
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"go.uber.org/zap"
 )
 
 type Form struct {
 	Errors     *Errors
 	nav        nav.Navigation
-	log        *zap.Logger
 	validRules []*validation.KeyRules
 }
 
 func NewForm(
-	inputs []components.TextInput, buttons []components.Button, l *zap.Logger,
+	inputs []components.TextInput, buttons []components.Button,
 ) *Form {
 	inputNames := make([]string, len(inputs))
 	validRules := make([]*validation.KeyRules, len(inputs))
@@ -37,7 +36,6 @@ func NewForm(
 			Buttons: buttons,
 		},
 		Errors:     NewErrors(inputNames),
-		log:        l,
 		validRules: validRules,
 	}
 
@@ -45,7 +43,7 @@ func NewForm(
 }
 
 func (m *Form) Init() tea.Cmd {
-	return nil
+	return textinput.Blink
 }
 
 func (m *Form) GetValues() map[string]string {
@@ -65,9 +63,12 @@ func (m *Form) Submit() tea.Msg {
 	m.Errors.Clear()
 	vals := m.GetValues()
 
-	err := valid.ValidMapString(&vals, m.validRules)
-	if err != nil {
-		return msgs.ErrorMsg(err)
+	var err error
+	if len(m.validRules) > 0 {
+		err = valid.ValidMapString(&vals, m.validRules)
+		if err != nil {
+			return msgs.ErrorMsg(err)
+		}
 	}
 
 	return msgs.FormSubmitMsg{
@@ -86,9 +87,10 @@ func (m *Form) updateInputs(msg tea.Msg) []tea.Cmd {
 }
 
 func (m *Form) Update(msg tea.Msg) (*Form, tea.Cmd) {
+	inputCmds := m.updateInputs(msg)
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		inputCmds := m.updateInputs(msg)
 		navCmds := m.nav.HandleKeyPress(msg)
 
 		if msg.Type == tea.KeyEnter {
@@ -108,7 +110,7 @@ func (m *Form) Update(msg tea.Msg) (*Form, tea.Cmd) {
 		m.Errors.HandleAPIError(msg)
 	}
 
-	return m, nil
+	return m, tea.Batch(inputCmds...)
 }
 
 func (m *Form) View() string {

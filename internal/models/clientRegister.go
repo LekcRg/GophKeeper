@@ -1,6 +1,6 @@
 package models
 
-type ClientAuthValues struct {
+type ClientRegisterValues struct {
 	Login          string
 	Password       string
 	CryptoPassword string

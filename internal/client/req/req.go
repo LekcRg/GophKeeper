@@ -26,6 +26,7 @@ func (e *ResError) Error() string {
 type Request struct {
 	client *resty.Client
 	config *config.ClientConfig
+	addr   string
 }
 
 func New(cfg *config.ClientConfig) *Request {

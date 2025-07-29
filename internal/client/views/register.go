@@ -13,7 +13,6 @@ import (
 	"github.com/LekcRg/GophKeeper/internal/errs"
 	"github.com/LekcRg/GophKeeper/internal/models"
 	"github.com/LekcRg/GophKeeper/internal/server/service/valid"
-	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"go.uber.org/zap"
 )
@@ -54,6 +53,7 @@ func NewRegister(acts *actions.Actions, log *zap.Logger) tea.Model {
 			Valid:       valid.PasswordRules,
 		}),
 	}
+	log.Info(inputs[0].Cursor.Mode().String())
 
 	buttons := []components.Button{
 		{
@@ -64,14 +64,14 @@ func NewRegister(acts *actions.Actions, log *zap.Logger) tea.Model {
 
 	return &RegisterModel{
 		actions: acts,
-		form:    form.NewForm(inputs, buttons, log),
+		form:    form.NewForm(inputs, buttons),
 		help:    help.NewRegister(),
 		log:     log,
 	}
 }
 
 func (m *RegisterModel) Init() tea.Cmd {
-	return textinput.Blink
+	return m.form.Init()
 }
 
 func (m *RegisterModel) handleSubmit(msg msgs.FormSubmitMsg) tea.Cmd {
@@ -80,7 +80,7 @@ func (m *RegisterModel) handleSubmit(msg msgs.FormSubmitMsg) tea.Cmd {
 			return msgs.ErrorMsg(errs.ErrEqualPasswords)
 		}
 
-		values := models.ClientAuthValues{
+		values := models.ClientRegisterValues{
 			Login:          msg.Values[RegisterLoginInputName],
 			Password:       msg.Values[RegisterPasswordInputName],
 			CryptoPassword: msg.Values[RegisterCryptoPasswordInputName],
@@ -93,15 +93,6 @@ func (m *RegisterModel) handleSubmit(msg msgs.FormSubmitMsg) tea.Cmd {
 
 		return msgs.RegisterSuccessMsg{Res: res}
 	}
-}
-
-func (m *RegisterModel) updateInputs(msg tea.Msg) []tea.Cmd {
-	cmds := make([]tea.Cmd, len(m.nav.Inputs))
-	for i := range m.nav.Inputs {
-		cmds[i] = m.nav.Inputs[i].Update(msg)
-	}
-
-	return cmds
 }
 
 func (m *RegisterModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {

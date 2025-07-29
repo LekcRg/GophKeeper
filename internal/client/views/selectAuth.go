@@ -12,18 +12,16 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
-	"go.uber.org/zap"
 )
 
 type SelectAuthModel struct {
 	form *form.Form
 	help *help.SelectAuth
-	log  *zap.Logger
 }
 
 const addrInputName = "address"
 
-func NewSelectAuth(addr string, l *zap.Logger) tea.Model {
+func NewSelectAuth(addr string) tea.Model {
 	inputs := []components.TextInput{
 		components.NewTextInput(components.TextInputOpts{
 			Placeholder: "Server address",
@@ -54,14 +52,13 @@ func NewSelectAuth(addr string, l *zap.Logger) tea.Model {
 	}
 
 	return &SelectAuthModel{
-		form: form.NewForm(inputs, buttons, l),
-		log:  l,
+		form: form.NewForm(inputs, buttons),
 		help: help.NewSelectAuth(),
 	}
 }
 
 func (m *SelectAuthModel) Init() tea.Cmd {
-	return nil
+	return m.form.Init()
 }
 
 func (m *SelectAuthModel) handleSubmit(msg msgs.FormSubmitMsg) tea.Cmd {

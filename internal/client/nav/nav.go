@@ -58,9 +58,9 @@ func (n *Navigation) updateFocus() []tea.Cmd {
 
 func (n *Navigation) HandleKeyPress(keyMsg tea.KeyMsg) []tea.Cmd {
 	switch keyMsg.Type {
-	case tea.KeyUp:
+	case tea.KeyUp, tea.KeyShiftTab:
 		return n.MoveToPrev()
-	case tea.KeyDown:
+	case tea.KeyDown, tea.KeyTab:
 		return n.MoveToNext()
 	}
 

@@ -14,12 +14,12 @@ func NewRegister() *Register {
 	return &Register{
 		keys: &AuthKeyMap{
 			Up: key.NewBinding(
-				key.WithKeys("up"),
-				key.WithHelp("↑", "move up"),
+				key.WithKeys("up", "shift+tab"),
+				key.WithHelp("↑/Shift+Tab", "move up"),
 			),
 			Down: key.NewBinding(
 				key.WithKeys("down", "tab"),
-				key.WithHelp("↓", "move down"),
+				key.WithHelp("↓/Tab", "move down"),
 			),
 			Back: key.NewBinding(
 				key.WithKeys("esc"),

@@ -10,7 +10,7 @@ import (
 )
 
 func (a *Actions) Register(
-	ctx context.Context, vals models.ClientAuthValues,
+	ctx context.Context, vals models.ClientRegisterValues,
 ) (models.ClientRegisterResponse, error) {
 	salt, err := crypto.GenEncryptionSalt()
 	if err != nil {
@@ -36,7 +36,7 @@ func (a *Actions) Register(
 		Password:     vals.Password,
 	}
 
-	apiKey, err := a.req.UserRegister(ctx, reqVals)
+	apiKey, err := a.req.Register(ctx, reqVals)
 	if err != nil {
 		a.log.Error("User register request error", zap.Error(err))
 		return models.ClientRegisterResponse{}, err
@@ -47,4 +47,8 @@ func (a *Actions) Register(
 		Salt: salt,
 		Tag:  encTag,
 	}, nil
+}
+
+func (a *Actions) UpdateKey(ctx context.Context, req models.UserLogin) (models.APIKeyRes, error) {
+	return a.req.UpdateAPIKey(ctx, req)
 }
