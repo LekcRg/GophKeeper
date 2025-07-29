@@ -1,6 +1,7 @@
 package form
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -54,17 +55,23 @@ func (e *Errors) HandleError(err error, key string) {
 }
 
 func (e *Errors) HandleAPIError(err error) {
-	var listErrs map[string]string
-	switch et := err.(type) {
-	case *req.ResError:
-		listErrs = et.Errors
-	case validation.Errors:
-		listErrs = make(map[string]string, len(et))
-		for key, val := range et {
+	var (
+		listErrs map[string]string
+		valErr   validation.Errors
+	)
+
+	var resErr *req.ResError
+	//nolint:gocritic // errors switch
+	if errors.As(err, &resErr) {
+		listErrs = resErr.Errors
+	} else if errors.As(err, &valErr) {
+		listErrs = make(map[string]string, len(valErr))
+		for key, val := range valErr {
 			listErrs[key] = val.Error()
 		}
-	default:
+	} else {
 		e.setMessage(err.Error())
+
 		return
 	}
 

@@ -79,8 +79,8 @@ func (a *Actions) GetCredentials(
 	}, nil
 }
 
-func (a *Actions) UpdateKey(ctx context.Context, req models.UserLogin) (models.APIKeyRes, error) {
-	return a.req.UpdateAPIKey(ctx, req)
+func (a *Actions) UpdateKey(ctx context.Context, request models.UserLogin) (models.APIKeyRes, error) {
+	return a.req.UpdateAPIKey(ctx, request)
 }
 
 func (a *Actions) CheckCryptoPassword(form msgs.FormSubmitMsg, passwordInput string) tea.Cmd {

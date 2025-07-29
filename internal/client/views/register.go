@@ -9,7 +9,6 @@ import (
 	"github.com/LekcRg/GophKeeper/internal/client/components/form"
 	"github.com/LekcRg/GophKeeper/internal/client/components/help"
 	"github.com/LekcRg/GophKeeper/internal/client/msgs"
-	"github.com/LekcRg/GophKeeper/internal/client/nav"
 	"github.com/LekcRg/GophKeeper/internal/errs"
 	"github.com/LekcRg/GophKeeper/internal/models"
 	"github.com/LekcRg/GophKeeper/internal/server/service/valid"
@@ -20,8 +19,6 @@ import (
 type RegisterModel struct {
 	help    *help.Register
 	actions *actions.Actions
-	nav     *nav.Navigation
-	errors  *form.Errors
 	log     *zap.Logger
 	form    *form.Form
 }

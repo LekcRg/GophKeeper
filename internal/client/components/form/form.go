@@ -25,7 +25,8 @@ func NewForm(
 	inputNames := make([]string, len(inputs))
 	validRules := make([]*validation.KeyRules, len(inputs))
 
-	for i, input := range inputs {
+	for i := range inputs {
+		input := &inputs[i]
 		inputNames[i] = input.Name
 		validRules[i] = validation.Key(input.Name, input.Valid...)
 	}
@@ -48,7 +49,9 @@ func (m *Form) Init() tea.Cmd {
 
 func (m *Form) GetValues() map[string]string {
 	res := make(map[string]string, len(m.nav.Inputs))
-	for _, input := range m.nav.Inputs {
+
+	for i := range m.nav.Inputs {
+		input := &m.nav.Inputs[i]
 		res[input.Name] = input.Value()
 	}
 
@@ -65,7 +68,7 @@ func (m *Form) Submit() tea.Msg {
 
 	var err error
 	if len(m.validRules) > 0 {
-		err = valid.ValidMapString(&vals, m.validRules)
+		err = valid.MapString(vals, m.validRules)
 		if err != nil {
 			return msgs.ErrorMsg(err)
 		}
@@ -118,7 +121,8 @@ func (m *Form) View() string {
 
 	b.WriteRune('\n')
 
-	for _, input := range m.nav.Inputs {
+	for i := range m.nav.Inputs {
+		input := &m.nav.Inputs[i]
 		b.WriteString(input.View())
 		b.WriteString(styles.ErrorStyle.Render(
 			m.Errors.GetFieldError(input.Name),

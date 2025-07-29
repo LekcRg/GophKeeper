@@ -20,6 +20,6 @@ func IsContainsHTTP(value any) error {
 	return errs.ErrMustContainHTTP
 }
 
-func ValidMapString(m *map[string]string, rules []*validation.KeyRules) error {
+func MapString(m map[string]string, rules []*validation.KeyRules) error {
 	return validation.Validate(m, validation.Map(rules...))
 }

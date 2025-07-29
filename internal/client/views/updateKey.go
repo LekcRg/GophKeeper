@@ -12,13 +12,11 @@ import (
 	"github.com/LekcRg/GophKeeper/internal/client/styles"
 	"github.com/LekcRg/GophKeeper/internal/models"
 	tea "github.com/charmbracelet/bubbletea"
-	"go.uber.org/zap"
 )
 
 type UpdateKeyModel struct {
 	form       *form.Form
 	help       *help.Register
-	log        *zap.Logger
 	actions    *actions.Actions
 	key        string
 	successBtn components.Button

@@ -4,7 +4,6 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"fmt"
 	"io"
 	"runtime"
 
@@ -70,11 +69,6 @@ func Encrypt(content, key []byte) ([]byte, error) {
 func Decrypt(password string, enc, salt []byte) ([]byte, error) {
 	key := DeriveEncryptionKey(password, salt)
 
-	// enc, err := base64.StdEncoding.DecodeString(encryptedString)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
@@ -87,7 +81,6 @@ func Decrypt(password string, enc, salt []byte) ([]byte, error) {
 
 	nonceSize := aesGCM.NonceSize()
 	if len(enc) < nonceSize {
-		fmt.Println(len(enc))
 		return nil, errs.ErrInvalidEncrypted
 	}
 

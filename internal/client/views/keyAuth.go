@@ -10,13 +10,11 @@ import (
 	"github.com/LekcRg/GophKeeper/internal/client/components/help"
 	"github.com/LekcRg/GophKeeper/internal/client/msgs"
 	tea "github.com/charmbracelet/bubbletea"
-	"go.uber.org/zap"
 )
 
 type KeyAuthModel struct {
 	form    *form.Form
 	help    *help.Register
-	log     *zap.Logger
 	actions *actions.Actions
 }
 

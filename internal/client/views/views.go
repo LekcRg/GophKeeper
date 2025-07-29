@@ -60,7 +60,7 @@ func (m *Views) handleUpdateCredentials(successMsg msgs.CredentialsBytesMsg) tea
 		}
 	}
 
-	return m.router.SwitchTo(router.TokenAuthView)
+	return m.router.SwitchTo(router.CryptoPassView)
 }
 
 func (m *Views) handleSelectAuth(msg msgs.SelectAuthMsg) tea.Cmd {

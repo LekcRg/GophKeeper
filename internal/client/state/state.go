@@ -17,12 +17,3 @@ func New(repo *repository.Repository) *State {
 		repo: repo,
 	}
 }
-
-func (s *State) UpdateEncryptionData(tag, salt []byte, key string) error {
-	s.Config.EnctyptedTag = tag
-	s.Config.Salt = salt
-	s.Config.Key = key
-
-	// return s.Repo.SaveConfig(s.Config)
-	return nil
-}
