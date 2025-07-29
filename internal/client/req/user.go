@@ -45,3 +45,28 @@ func (r *Request) UpdateAPIKey(
 ) (models.APIKeyRes, error) {
 	return r.getToken(ctx, body, routes.UserUpdateKey)
 }
+
+func (r *Request) GetCredentials(
+	ctx context.Context, key string,
+) (models.CryptoParamsRes, error) {
+	var (
+		resBody models.CryptoParamsRes
+		resErrs map[string]string
+	)
+
+	res, err := r.client.R().
+		SetHeader("Authorization", "Bearer "+key).
+		SetContext(ctx).
+		SetResult(&resBody).
+		SetError(&resErrs).
+		Get(r.config.Address + routes.UserGetCryptoParams)
+	if err != nil {
+		return resBody, err
+	}
+
+	if res.StatusCode() > minErrStatus {
+		return resBody, &ResError{Errors: resErrs}
+	}
+
+	return resBody, nil
+}

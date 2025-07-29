@@ -1,6 +1,8 @@
 package router
 
-import tea "github.com/charmbracelet/bubbletea"
+import (
+	tea "github.com/charmbracelet/bubbletea"
+)
 
 type CurrentView string
 
@@ -16,6 +18,7 @@ const (
 	RegisterView    CurrentView = "register"
 	TokenAuthView   CurrentView = "token"
 	UpdateTokenView CurrentView = "update-token"
+	CryptoPassView  CurrentView = "crypto-pass"
 	ListView        CurrentView = "list"
 )
 
@@ -27,7 +30,12 @@ func NewViewRouter(current CurrentView, v Views) *ViewRouter {
 }
 
 func (r *ViewRouter) Init() tea.Cmd {
-	return r.Current().Init()
+	current := r.Current()
+	if current != nil {
+		return current.Init()
+	}
+
+	return nil
 }
 
 func (r *ViewRouter) IsAuthenticationView() bool {

@@ -47,6 +47,7 @@ func (m *Middlewares) RequestLogger(next http.Handler) http.Handler {
 		next.ServeHTTP(&lw, r)
 
 		duration := time.Since(startTime)
+		contentType := r.Header.Get("Content-Type")
 
 		m.log.Info("Got incoming HTTP request",
 			zap.String("method", r.Method),
@@ -54,6 +55,7 @@ func (m *Middlewares) RequestLogger(next http.Handler) http.Handler {
 			zap.String("remote_addr", r.RemoteAddr),
 			zap.Int("status", responseData.status),
 			zap.Int("size", responseData.size),
+			zap.String("Content-Type", contentType),
 			zap.Duration("time", duration),
 		)
 	})

@@ -4,10 +4,11 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"encoding/base64"
+	"fmt"
 	"io"
 	"runtime"
 
+	"github.com/LekcRg/GophKeeper/internal/errs"
 	"golang.org/x/crypto/argon2"
 )
 
@@ -66,13 +67,13 @@ func Encrypt(content, key []byte) ([]byte, error) {
 	return encrypted, nil
 }
 
-func Decrypt(encryptedString, password string, salt []byte) ([]byte, error) {
+func Decrypt(password string, enc, salt []byte) ([]byte, error) {
 	key := DeriveEncryptionKey(password, salt)
 
-	enc, err := base64.StdEncoding.DecodeString(encryptedString)
-	if err != nil {
-		return nil, err
-	}
+	// enc, err := base64.StdEncoding.DecodeString(encryptedString)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -85,6 +86,11 @@ func Decrypt(encryptedString, password string, salt []byte) ([]byte, error) {
 	}
 
 	nonceSize := aesGCM.NonceSize()
+	if len(enc) < nonceSize {
+		fmt.Println(len(enc))
+		return nil, errs.ErrInvalidEncrypted
+	}
+
 	nonce, ciphertext := enc[:nonceSize], enc[nonceSize:]
 
 	plaintext, err := aesGCM.Open(nil, nonce, ciphertext, nil)
@@ -93,4 +99,18 @@ func Decrypt(encryptedString, password string, salt []byte) ([]byte, error) {
 	}
 
 	return plaintext, nil
+}
+
+func ValidEncryptionPassword(password string, tag, salt []byte) error {
+	tag, err := Decrypt(password, tag, salt)
+	if err != nil {
+		return errs.ErrInvalidCryptoPasssword
+	}
+
+	tagStr := string(tag)
+	if tagStr != TagContent {
+		return errs.ErrInvalidCryptoPasssword
+	}
+
+	return nil
 }

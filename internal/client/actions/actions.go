@@ -1,9 +1,9 @@
 package actions
 
 import (
+	"github.com/LekcRg/GophKeeper/internal/client/msgs"
 	"github.com/LekcRg/GophKeeper/internal/client/req"
 	"github.com/LekcRg/GophKeeper/internal/config"
-	"github.com/LekcRg/GophKeeper/internal/models"
 	"go.uber.org/zap"
 )
 
@@ -27,7 +27,7 @@ func (a *Actions) UpdateConfigAddress(addr string) error {
 	})
 }
 
-func (a *Actions) UpdateConfigCredentials(c models.ClientRegisterResponse) error {
+func (a *Actions) UpdateConfigCredentials(c msgs.CredentialsBytesMsg) error {
 	err := a.config.Update(func(cfg *config.ClientConfig) {
 		cfg.EnctyptedTag = c.Tag
 		cfg.Salt = c.Salt

@@ -20,9 +20,10 @@ func (m *Middlewares) Authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		key := r.Header.Get("Authorization")
 		key = strings.TrimPrefix(key, "Bearer ")
+		errorMsg := "Invalid token"
 
 		if key == "" {
-			m.resp.Error(w, http.StatusUnauthorized, "Unauthorized")
+			m.resp.Error(w, http.StatusUnauthorized, errorMsg)
 			return
 		}
 
@@ -32,7 +33,7 @@ func (m *Middlewares) Authenticate(next http.Handler) http.Handler {
 		)
 
 		if len(splittedKey) < splittedLen {
-			m.resp.Error(w, http.StatusUnauthorized, "Unauthorized")
+			m.resp.Error(w, http.StatusUnauthorized, errorMsg)
 			return
 		}
 
@@ -41,18 +42,18 @@ func (m *Middlewares) Authenticate(next http.Handler) http.Handler {
 
 		idInt, err := strconv.Atoi(id)
 		if err != nil {
-			m.resp.Error(w, http.StatusUnauthorized, "Unauthorized")
+			m.resp.Error(w, http.StatusUnauthorized, errorMsg)
 			return
 		}
 
 		user, err := m.userRepo.GetUserByID(r.Context(), idInt)
 		if err != nil {
-			m.resp.Error(w, http.StatusUnauthorized, "Unauthorized")
+			m.resp.Error(w, http.StatusUnauthorized, errorMsg)
 			return
 		}
 
 		if user.KeyHash != hash {
-			m.resp.Error(w, http.StatusUnauthorized, "Unauthorized")
+			m.resp.Error(w, http.StatusUnauthorized, errorMsg)
 			return
 		}
 

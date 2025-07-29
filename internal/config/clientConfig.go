@@ -61,43 +61,41 @@ func getClientPath() (string, error) {
 }
 
 func GetClientConfig() (*ClientConfig, error) {
-	emptyCfg := &ClientConfig{}
+	cfg := &ClientConfig{}
 
 	path, err := getClientPath()
 	if err != nil {
-		return emptyCfg, err
+		return cfg, err
 	}
 
 	cfgPath := filepath.Join(path, configFileName)
 
 	f, err := os.Open(cfgPath)
 	if err != nil {
-		return emptyCfg, err
+		return cfg, err
 	}
 	defer f.Close()
 
-	var cfg ClientConfig
-
 	err = yaml.NewDecoder(f).Decode(&cfg)
 	if err != nil {
-		return emptyCfg, err
+		return cfg, err
 	}
 
 	if cfg.SaltString != "" {
 		cfg.Salt, err = base64.StdEncoding.DecodeString(cfg.SaltString)
 		if err != nil {
-			return emptyCfg, err
+			return cfg, err
 		}
 	}
 
 	if cfg.EncryptedTagString != "" {
-		cfg.Salt, err = base64.StdEncoding.DecodeString(cfg.EncryptedTagString)
+		cfg.EnctyptedTag, err = base64.StdEncoding.DecodeString(cfg.EncryptedTagString)
 		if err != nil {
-			return emptyCfg, err
+			return cfg, err
 		}
 	}
 
-	return &cfg, nil
+	return cfg, nil
 }
 
 func (c *ClientConfig) updateConfigFile() error {

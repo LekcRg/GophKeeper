@@ -26,7 +26,7 @@ func New(logger *zap.Logger, cfg *config.ClientConfig) *Views {
 
 	currentView := router.SelectAuthView
 	if cfg.Key != "" {
-		currentView = router.ListView
+		currentView = router.CryptoPassView
 	}
 
 	v := router.Views{
@@ -34,6 +34,7 @@ func New(logger *zap.Logger, cfg *config.ClientConfig) *Views {
 		router.RegisterView:    NewRegister(acts, logger),
 		router.TokenAuthView:   NewKeyAuth(acts),
 		router.UpdateTokenView: NewUpdateKey(acts),
+		router.CryptoPassView:  NewCryptoPass(acts),
 	}
 
 	m := &Views{
@@ -49,8 +50,8 @@ func (m *Views) Init() tea.Cmd {
 	return m.router.Init()
 }
 
-func (m *Views) handleRegisterSuccess(successMsg msgs.RegisterSuccessMsg) tea.Cmd {
-	err := m.actions.UpdateConfigCredentials(successMsg.Res)
+func (m *Views) handleUpdateCredentials(successMsg msgs.CredentialsBytesMsg) tea.Cmd {
+	err := m.actions.UpdateConfigCredentials(successMsg)
 	if err != nil {
 		m.log.Error("Update credentials config err", zap.Error(err))
 
@@ -87,10 +88,12 @@ func (m *Views) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case msgs.SelectAuthMsg:
 		return m, m.handleSelectAuth(typeMsg)
-	case msgs.RegisterSuccessMsg:
-		return m, m.handleRegisterSuccess(typeMsg)
+	case msgs.CredentialsBytesMsg:
+		return m, m.handleUpdateCredentials(typeMsg)
 	case msgs.UpdateKeySuccessMsg:
 		return m, m.router.SwitchTo(router.SelectAuthView)
+	case msgs.CryptoPassValid:
+		return m, m.router.SwitchTo(router.ListView)
 	}
 
 	currentView := m.router.Current()

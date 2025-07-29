@@ -53,7 +53,6 @@ func NewRegister(acts *actions.Actions, log *zap.Logger) tea.Model {
 			Valid:       valid.PasswordRules,
 		}),
 	}
-	log.Info(inputs[0].Cursor.Mode().String())
 
 	buttons := []components.Button{
 		{
@@ -88,10 +87,10 @@ func (m *RegisterModel) handleSubmit(msg msgs.FormSubmitMsg) tea.Cmd {
 
 		res, err := m.actions.Register(context.Background(), values)
 		if err != nil {
-			return msgs.ErrorMsg(err)
+			return err
 		}
 
-		return msgs.RegisterSuccessMsg{Res: res}
+		return res
 	}
 }
 

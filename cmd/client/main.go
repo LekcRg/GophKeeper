@@ -16,7 +16,7 @@ func main() {
 
 	cfg, err := config.GetClientConfig()
 	if err != nil {
-		zapLog.Info("Config not found", zap.Error(err))
+		zapLog.Info("Get config error", zap.Error(err))
 	}
 
 	defer func() {

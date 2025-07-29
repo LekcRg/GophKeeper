@@ -1,7 +1,5 @@
 package msgs
 
-import "github.com/LekcRg/GophKeeper/internal/models"
-
 type ErrorMsg error
 
 type SelectAuthMsg struct {
@@ -14,8 +12,12 @@ type FormSubmitMsg struct {
 	ButtonName string
 }
 
-type RegisterSuccessMsg struct {
-	Res models.ClientRegisterResponse
+type CredentialsBytesMsg struct {
+	Key  string
+	Salt []byte
+	Tag  []byte
 }
 
 type UpdateKeySuccessMsg string
+
+type CryptoPassValid struct{}
