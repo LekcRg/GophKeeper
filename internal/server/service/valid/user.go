@@ -10,14 +10,15 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
-func passwordField(password *string) *validation.FieldRules {
-	const (
-		minLenPassword = 12
-		maxLenPassword = 50
-	)
+const (
+	minLenPassword = 12
+	maxLenPassword = 50
+	minLenLogin    = 4
+	maxLenLogin    = 50
+)
 
-	return validation.Field(
-		password,
+var (
+	PasswordRules = []validation.Rule{
 		validation.Required,
 		validation.Length(minLenPassword, maxLenPassword),
 		validation.Match(regexp.MustCompile("[a-z]")).
@@ -28,22 +29,21 @@ func passwordField(password *string) *validation.FieldRules {
 			Error("password requires number"),
 		validation.Match(regexp.MustCompile(`[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]`)).
 			Error("password requires special character"),
-	)
-}
-
-func loginField(login *string) *validation.FieldRules {
-	const (
-		minLenLogin = 4
-		maxLenLogin = 50
-	)
-
-	return validation.Field(
-		login,
+	}
+	LoginRules = []validation.Rule{
 		validation.Required,
 		validation.Length(minLenLogin, maxLenLogin),
 		validation.Match(regexp.MustCompile(`^[a-zA-Z0-9_-]*$`)).
 			Error("login must contain only letters, numbers, underscores, or hyphens"),
-	)
+	}
+)
+
+func passwordField(password *string) *validation.FieldRules {
+	return validation.Field(password, PasswordRules...)
+}
+
+func loginField(login *string) *validation.FieldRules {
+	return validation.Field(login, LoginRules...)
 }
 
 func salt(value any) error {

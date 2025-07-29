@@ -4,6 +4,7 @@ import (
 	"github.com/LekcRg/GophKeeper/internal/client/styles"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
 type TextInputOpts struct {
@@ -13,11 +14,13 @@ type TextInputOpts struct {
 	CharLimit   int
 	IsFocus     bool
 	IsPassword  bool
+	Valid       []validation.Rule
 }
 
 type TextInput struct {
 	Name string
 	textinput.Model
+	Valid []validation.Rule
 }
 
 const (
@@ -30,6 +33,7 @@ func NewTextInput(opts TextInputOpts) TextInput {
 	ti := TextInput{
 		Model: textinput.New(),
 		Name:  opts.Name,
+		Valid: opts.Valid,
 	}
 	ti.Cursor.Style = styles.CursorStyle
 

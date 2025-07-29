@@ -30,6 +30,7 @@ var (
 	ErrInvalidCredentials = errors.New("invalid login or password")
 	ErrUserNotFound       = errors.New("user not found")
 	ErrInvalidPassword    = errors.New("invalid password")
+	ErrEqualPasswords     = errors.New("Password and crypto password must not be equal")
 )
 
 // Crypto errors.

@@ -4,131 +4,92 @@ import (
 	"strings"
 
 	"github.com/LekcRg/GophKeeper/internal/client/components"
+	"github.com/LekcRg/GophKeeper/internal/client/components/form"
 	"github.com/LekcRg/GophKeeper/internal/client/components/help"
-	"github.com/LekcRg/GophKeeper/internal/client/form"
 	"github.com/LekcRg/GophKeeper/internal/client/msgs"
-	"github.com/LekcRg/GophKeeper/internal/client/nav"
 	"github.com/LekcRg/GophKeeper/internal/client/router"
-	"github.com/LekcRg/GophKeeper/internal/client/styles"
 	"github.com/LekcRg/GophKeeper/internal/server/service/valid"
 	tea "github.com/charmbracelet/bubbletea"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/go-ozzo/ozzo-validation/v4/is"
+	"go.uber.org/zap"
 )
 
 type SelectAuthModel struct {
-	help   *help.SelectAuth
-	error  string
-	errors *form.Errors
-	nav    nav.Navigation
+	form *form.Form
+	help *help.SelectAuth
+	log  *zap.Logger
 }
 
-func NewSelectAuth(addr string) tea.Model {
-	m := &SelectAuthModel{
-		nav: nav.Navigation{
-			Inputs: []components.TextInput{
-				components.NewTextInput(components.TextInputOpts{
-					Placeholder: "Server address",
-					Name:        "address",
-					IsFocus:     true,
-					Value:       addr,
-				}),
+const addrInputName = "address"
+
+func NewSelectAuth(addr string, l *zap.Logger) tea.Model {
+	inputs := []components.TextInput{
+		components.NewTextInput(components.TextInputOpts{
+			Placeholder: "Server address",
+			Name:        addrInputName,
+			IsFocus:     true,
+			Value:       addr,
+			Valid: []validation.Rule{
+				validation.Required,
+				is.URL,
+				validation.By(valid.IsContainsHTTP),
 			},
-			Buttons: []components.Button{
-				{
-					Label: "Register",
-					Name:  string(router.RegisterView),
-				},
-				{
-					Label: "Login with token",
-					Name:  string(router.TokenAuthView),
-				},
-				{
-					Label: "Update and get new token",
-					Name:  string(router.UpdateTokenView),
-				},
-			},
-		},
-		help: help.NewSelectAuth(),
-		errors: form.NewErrors([]string{
-			"address",
 		}),
 	}
 
-	return m
+	buttons := []components.Button{
+		{
+			Label: "Register",
+			Name:  string(router.RegisterView),
+		},
+		{
+			Label: "Login with token",
+			Name:  string(router.TokenAuthView),
+		},
+		{
+			Label: "Update and get new token",
+			Name:  string(router.UpdateTokenView),
+		},
+	}
+
+	return &SelectAuthModel{
+		form: form.NewForm(inputs, buttons, l),
+		log:  l,
+		help: help.NewSelectAuth(),
+	}
 }
 
 func (m *SelectAuthModel) Init() tea.Cmd {
 	return nil
 }
 
-func (m *SelectAuthModel) Submit() tea.Cmd {
-	addr := m.nav.Inputs[0].Value()
-
-	err := valid.ValidAddr(addr)
-	if err != nil {
-		m.errors.HandleError(err, m.nav.Inputs[0].Name)
-
-		return nil
-	}
-
+func (m *SelectAuthModel) handleSubmit(msg msgs.FormSubmitMsg) tea.Cmd {
 	return func() tea.Msg {
 		return msgs.SelectAuthMsg{
-			Selected: m.nav.GetCurrentButton().Name,
-			Address:  addr,
+			Selected: msg.ButtonName,
+			Address:  msg.Values[addrInputName],
 		}
 	}
-}
-
-func (m *SelectAuthModel) updateInputs(msg tea.Msg) []tea.Cmd {
-	cmds := make([]tea.Cmd, len(m.nav.Inputs))
-	for i := range m.nav.Inputs {
-		cmds[i] = m.nav.Inputs[i].Update(msg)
-	}
-
-	return cmds
 }
 
 func (m *SelectAuthModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		inputCmds := m.updateInputs(msg)
-		navCmds := m.nav.HandleKeyPress(msg)
+	switch typeMsg := msg.(type) {
+	case msgs.FormSubmitMsg:
+		return m, m.handleSubmit(typeMsg)
+	default:
+		var newMsg tea.Cmd
+		m.form, newMsg = m.form.Update(msg)
 
-		if msg.Type == tea.KeyEnter && m.nav.IsOnButton() {
-			btn := m.nav.GetCurrentButton()
-			if btn != nil {
-				return m, m.Submit()
-			}
-		}
-
-		return m, tea.Batch(append(inputCmds, navCmds...)...)
-	case msgs.ErrorMsg:
-		m.errors.HandleError(msg, "")
+		return m, newMsg
 	}
-
-	return m, nil
 }
 
 func (m *SelectAuthModel) View() string {
 	var b strings.Builder
 
+	b.WriteString(m.form.View())
 	b.WriteRune('\n')
-
-	for _, input := range m.nav.Inputs {
-		b.WriteString(input.View())
-		b.WriteString(styles.ErrorStyle.Render(
-			m.errors.GetFieldError(input.Name),
-		))
-	}
-
-	b.WriteString("\n\n")
-
-	for _, btn := range m.nav.Buttons {
-		b.WriteString(btn.View())
-		b.WriteRune('\n')
-	}
-
-	b.WriteString(styles.ErrorStyle.Render(m.errors.Message))
-	b.WriteString("\n")
 	b.WriteString(m.help.View())
 
 	return b.String()

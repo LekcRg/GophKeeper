@@ -2,17 +2,17 @@ package views
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/LekcRg/GophKeeper/internal/client/actions"
 	"github.com/LekcRg/GophKeeper/internal/client/components"
+	"github.com/LekcRg/GophKeeper/internal/client/components/form"
 	"github.com/LekcRg/GophKeeper/internal/client/components/help"
-	"github.com/LekcRg/GophKeeper/internal/client/form"
 	"github.com/LekcRg/GophKeeper/internal/client/msgs"
 	"github.com/LekcRg/GophKeeper/internal/client/nav"
-	"github.com/LekcRg/GophKeeper/internal/client/styles"
+	"github.com/LekcRg/GophKeeper/internal/errs"
 	"github.com/LekcRg/GophKeeper/internal/models"
+	"github.com/LekcRg/GophKeeper/internal/server/service/valid"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"go.uber.org/zap"
@@ -24,24 +24,34 @@ type RegisterModel struct {
 	nav     *nav.Navigation
 	errors  *form.Errors
 	log     *zap.Logger
+	form    *form.Form
 }
+
+const (
+	RegisterLoginInputName          = "login"
+	RegisterPasswordInputName       = "password"
+	RegisterCryptoPasswordInputName = "crypto-password"
+)
 
 func NewRegister(acts *actions.Actions, log *zap.Logger) tea.Model {
 	inputs := []components.TextInput{
 		components.NewTextInput(components.TextInputOpts{
 			Placeholder: "Login",
 			IsFocus:     true,
-			Name:        "login",
+			Name:        RegisterLoginInputName,
+			Valid:       valid.LoginRules,
 		}),
 		components.NewTextInput(components.TextInputOpts{
 			Placeholder: "Auth password",
 			IsPassword:  true,
-			Name:        "password",
+			Name:        RegisterPasswordInputName,
+			Valid:       valid.PasswordRules,
 		}),
 		components.NewTextInput(components.TextInputOpts{
 			Placeholder: "Enctyption password",
 			IsPassword:  true,
-			Name:        "crypto-password",
+			Name:        RegisterCryptoPasswordInputName,
+			Valid:       valid.PasswordRules,
 		}),
 	}
 
@@ -53,16 +63,10 @@ func NewRegister(acts *actions.Actions, log *zap.Logger) tea.Model {
 	}
 
 	return &RegisterModel{
-		help:    help.NewRegister(),
 		actions: acts,
+		form:    form.NewForm(inputs, buttons, log),
+		help:    help.NewRegister(),
 		log:     log,
-		nav: &nav.Navigation{
-			Inputs:  inputs,
-			Buttons: buttons,
-		},
-		errors: form.NewErrors([]string{
-			"login", "password", "crypto-password",
-		}),
 	}
 }
 
@@ -70,19 +74,21 @@ func (m *RegisterModel) Init() tea.Cmd {
 	return textinput.Blink
 }
 
-func (m *RegisterModel) handleRegister() tea.Cmd {
+func (m *RegisterModel) handleSubmit(msg msgs.FormSubmitMsg) tea.Cmd {
 	return func() tea.Msg {
-		m.errors.Clear()
+		if msg.Values[RegisterPasswordInputName] == msg.Values[RegisterCryptoPasswordInputName] {
+			return msgs.ErrorMsg(errs.ErrEqualPasswords)
+		}
 
 		values := models.ClientAuthValues{
-			Login:          m.nav.Inputs[0].Value(),
-			Password:       m.nav.Inputs[1].Value(),
-			CryptoPassword: m.nav.Inputs[2].Value(),
+			Login:          msg.Values[RegisterLoginInputName],
+			Password:       msg.Values[RegisterPasswordInputName],
+			CryptoPassword: msg.Values[RegisterCryptoPasswordInputName],
 		}
 
 		res, err := m.actions.Register(context.Background(), values)
 		if err != nil {
-			return msgs.RegisterErrorMsg{Err: err}
+			return msgs.ErrorMsg(err)
 		}
 
 		return msgs.RegisterSuccessMsg{Res: res}
@@ -99,46 +105,24 @@ func (m *RegisterModel) updateInputs(msg tea.Msg) []tea.Cmd {
 }
 
 func (m *RegisterModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		inputCmds := m.updateInputs(msg)
-		navCmds := m.nav.HandleKeyPress(msg)
+	switch msg.(type) {
+	default:
+		switch typeMsg := msg.(type) {
+		case msgs.FormSubmitMsg:
+			return m, m.handleSubmit(typeMsg)
+		default:
+			var newMsg tea.Cmd
+			m.form, newMsg = m.form.Update(msg)
 
-		if msg.Type == tea.KeyEnter && m.nav.IsOnButton() {
-			btn := m.nav.GetCurrentButton()
-			if btn != nil && btn.Name == "register" {
-				return m, m.handleRegister()
-			}
+			return m, newMsg
 		}
-
-		return m, tea.Batch(append(inputCmds, navCmds...)...)
-	case msgs.RegisterErrorMsg:
-		m.errors.HandleAPIError(msg.Err)
 	}
-
-	return m, nil
 }
 
 func (m *RegisterModel) View() string {
 	var b strings.Builder
 
-	for _, input := range m.nav.Inputs {
-		b.WriteString(input.View())
-
-		if err := m.errors.GetFieldError(input.Name); err != "" {
-			b.WriteString(styles.ErrorStyle.Render(err))
-		}
-
-		b.WriteRune('\n')
-	}
-
-	fmt.Fprintf(&b, "\n%s\n", styles.ErrorStyle.Render(m.errors.Message))
-
-	for _, btn := range m.nav.Buttons {
-		b.WriteString(btn.View())
-		b.WriteRune('\n')
-	}
-
+	b.WriteString(m.form.View())
 	b.WriteRune('\n')
 	b.WriteString(m.help.View())
 

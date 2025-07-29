@@ -15,18 +15,22 @@ func (n *Navigation) lastIndex() int {
 	return len(n.Inputs) + len(n.Buttons) - 1
 }
 
-func (n *Navigation) moveToNext() {
+func (n *Navigation) MoveToNext() []tea.Cmd {
 	n.focusIndex++
 	if n.focusIndex > n.lastIndex() {
 		n.focusIndex = 0
 	}
+
+	return n.updateFocus()
 }
 
-func (n *Navigation) moveToPrev() {
+func (n *Navigation) MoveToPrev() []tea.Cmd {
 	n.focusIndex--
 	if n.focusIndex < 0 {
 		n.focusIndex = n.lastIndex()
 	}
+
+	return n.updateFocus()
 }
 
 func (n *Navigation) updateFocus() []tea.Cmd {
@@ -54,12 +58,10 @@ func (n *Navigation) updateFocus() []tea.Cmd {
 
 func (n *Navigation) HandleKeyPress(keyMsg tea.KeyMsg) []tea.Cmd {
 	switch keyMsg.Type {
-	case tea.KeyUp, tea.KeyShiftTab:
-		n.moveToPrev()
-		return n.updateFocus()
-	case tea.KeyDown, tea.KeyTab:
-		n.moveToNext()
-		return n.updateFocus()
+	case tea.KeyUp:
+		return n.MoveToPrev()
+	case tea.KeyDown:
+		return n.MoveToNext()
 	}
 
 	return nil

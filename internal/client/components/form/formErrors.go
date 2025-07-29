@@ -1,11 +1,11 @@
 package form
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/LekcRg/GophKeeper/internal/client/req"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
 type Errors struct {
@@ -54,15 +54,23 @@ func (e *Errors) HandleError(err error, key string) {
 }
 
 func (e *Errors) HandleAPIError(err error) {
-	var resErr *req.ResError
-	if !errors.As(err, &resErr) || resErr == nil || resErr.Errors == nil {
+	var listErrs map[string]string
+	switch et := err.(type) {
+	case *req.ResError:
+		listErrs = et.Errors
+	case validation.Errors:
+		listErrs = make(map[string]string, len(et))
+		for key, val := range et {
+			listErrs[key] = val.Error()
+		}
+	default:
 		e.setMessage(err.Error())
 		return
 	}
 
 	var unknownErrors []string
 
-	for key, val := range resErr.Errors {
+	for key, val := range listErrs {
 		if val == "" {
 			continue
 		}

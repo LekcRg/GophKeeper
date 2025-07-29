@@ -5,10 +5,9 @@ import (
 
 	"github.com/LekcRg/GophKeeper/internal/errs"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
 
-func isContainsHTTP(value any) error {
+func IsContainsHTTP(value any) error {
 	str, ok := value.(string)
 	if !ok {
 		return errs.ErrValueIsNotString
@@ -21,11 +20,6 @@ func isContainsHTTP(value any) error {
 	return errs.ErrMustContainHTTP
 }
 
-func ValidAddr(addr string) error {
-	return validation.Validate(
-		addr,
-		validation.Required,
-		is.URL,
-		validation.By(isContainsHTTP),
-	)
+func ValidMapString(m *map[string]string, rules []*validation.KeyRules) error {
+	return validation.Validate(m, validation.Map(rules...))
 }

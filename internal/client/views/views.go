@@ -30,7 +30,7 @@ func New(logger *zap.Logger, cfg *config.ClientConfig) *Views {
 	}
 
 	v := router.Views{
-		router.SelectAuthView: NewSelectAuth(cfg.Address),
+		router.SelectAuthView: NewSelectAuth(cfg.Address, logger),
 		router.RegisterView:   NewRegister(acts, logger),
 	}
 
