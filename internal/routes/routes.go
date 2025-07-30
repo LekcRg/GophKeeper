@@ -7,4 +7,5 @@ const (
 	UserChangePassword  = "/user/change-password"
 	UserGetCryptoParams = "/user/crypto-params"
 	VaultCreateItem     = "/vault/create"
+	VaultGetAll         = "/vault/all"
 )

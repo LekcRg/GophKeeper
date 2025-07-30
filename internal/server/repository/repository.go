@@ -20,6 +20,7 @@ type UserRepo interface {
 }
 
 type VaultRepo interface {
+	GetAllItems(ctx context.Context, userID int) ([]models.VaultItem, error)
 	CreateItem(ctx context.Context, item models.VaultItem) (models.VaultItem, error)
 }
 

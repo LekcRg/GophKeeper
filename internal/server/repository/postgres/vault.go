@@ -41,3 +41,18 @@ func (vr *VaultRepo) CreateItem(ctx context.Context, item models.VaultItem) (mod
 
 	return res, nil
 }
+
+func (vr *VaultRepo) GetAllItems(
+	ctx context.Context, userID int,
+) ([]models.VaultItem, error) {
+	var res []models.VaultItem
+
+	query := `SElECT * FROM vault WHERE user_id = $1`
+
+	err := vr.db.SelectContext(ctx, &res, query, userID)
+	if err != nil {
+		return res, err
+	}
+
+	return res, nil
+}

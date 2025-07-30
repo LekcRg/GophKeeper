@@ -36,3 +36,9 @@ func (vs *VaultService) CreateItem(
 
 	return res, nil
 }
+
+func (vs *VaultService) GetAllItems(
+	ctx context.Context, id int,
+) ([]models.VaultItem, error) {
+	return vs.repo.GetAllItems(ctx, id)
+}

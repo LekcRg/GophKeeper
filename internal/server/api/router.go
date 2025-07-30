@@ -24,8 +24,9 @@ func New(h *handlers.Handlers, m *middlewares.Middlewares) *chi.Mux {
 
 	r.Group(func(cr chi.Router) {
 		cr.Use(m.Authenticate)
-		cr.Post(routes.VaultCreateItem, h.VaultHandlers.CreateItem)
 		cr.Get(routes.UserGetCryptoParams, h.UserHandlers.GetCryptoParams)
+		cr.Post(routes.VaultCreateItem, h.VaultHandlers.CreateItem)
+		cr.Get(routes.VaultGetAll, h.VaultHandlers.GetAllItems)
 	})
 
 	r.Get("/swagger/*", httpSwagger.Handler(

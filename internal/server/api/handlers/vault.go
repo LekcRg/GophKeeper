@@ -17,6 +17,7 @@ import (
 
 type VaultService interface {
 	CreateItem(ctx context.Context, item models.VaultItem) (models.VaultItem, error)
+	GetAllItems(ctx context.Context, id int) ([]models.VaultItem, error)
 }
 
 type VaultHandlers struct {
@@ -68,6 +69,8 @@ func (vh *VaultHandlers) CreateItem(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.As(err, &validation.Errors{}) {
 			vh.resp.JSON(w, http.StatusBadRequest, err)
+
+			return
 		}
 
 		vh.log.Info("Create vault service error", zap.Error(err))
@@ -77,4 +80,20 @@ func (vh *VaultHandlers) CreateItem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	vh.resp.JSON(w, http.StatusOK, vaultItem)
+}
+
+func (vh *VaultHandlers) GetAllItems(w http.ResponseWriter, r *http.Request) {
+	id, err := middlewares.GetID(r.Context())
+	if err != nil {
+		vh.resp.Error(w, http.StatusBadRequest, "Unauthorized")
+		return
+	}
+
+	res, err := vh.service.GetAllItems(r.Context(), id)
+	if err != nil {
+		vh.resp.InternalError(w)
+		return
+	}
+
+	vh.resp.JSON(w, http.StatusOK, res)
 }
