@@ -13,7 +13,7 @@ import (
 
 type CryptoPassModel struct {
 	form    *form.Form
-	help    *help.Register
+	help    *help.Auth
 	actions *actions.Actions
 }
 
@@ -36,9 +36,11 @@ func NewCryptoPass(acts *actions.Actions) tea.Model {
 		},
 	}
 
+	h := help.NewAuth()
+
 	return &CryptoPassModel{
-		form:    form.NewForm(inputs, buttons),
-		help:    help.NewRegister(),
+		form:    form.NewForm(inputs, buttons, h.Keys.Up, h.Keys.Down),
+		help:    h,
 		actions: acts,
 	}
 }

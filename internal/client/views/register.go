@@ -17,7 +17,7 @@ import (
 )
 
 type RegisterModel struct {
-	help    *help.Register
+	help    *help.Auth
 	actions *actions.Actions
 	log     *zap.Logger
 	form    *form.Form
@@ -58,10 +58,12 @@ func NewRegister(acts *actions.Actions, log *zap.Logger) tea.Model {
 		},
 	}
 
+	h := help.NewAuth()
+
 	return &RegisterModel{
 		actions: acts,
-		form:    form.NewForm(inputs, buttons),
-		help:    help.NewRegister(),
+		form:    form.NewForm(inputs, buttons, h.Keys.Up, h.Keys.Down),
+		help:    h,
 		log:     log,
 	}
 }

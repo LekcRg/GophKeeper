@@ -7,35 +7,23 @@ import (
 
 type SelectAuth struct {
 	help help.Model
-	keys *SelectAuthKeyMap
+	Keys *SelectAuthKeyMap
 }
 
 func NewSelectAuth() *SelectAuth {
 	return &SelectAuth{
-		keys: &SelectAuthKeyMap{
-			Up: key.NewBinding(
-				key.WithKeys("up", "shift+tab"),
-				key.WithHelp("↑/Shift+Tab", "move up"),
-			),
-			Down: key.NewBinding(
-				key.WithKeys("down", "tab"),
-				key.WithHelp("↓/Tab", "move down"),
-			),
-			Select: key.NewBinding(
-				key.WithKeys("enter"),
-				key.WithHelp("enter", "select"),
-			),
-			Quit: key.NewBinding(
-				key.WithKeys("ctrl+c"),
-				key.WithHelp("ctrl+c", "quit"),
-			),
+		Keys: &SelectAuthKeyMap{
+			Up:     Up,
+			Down:   Down,
+			Select: Select,
+			Quit:   Quit,
 		},
 		help: help.New(),
 	}
 }
 
 func (m *SelectAuth) View() string {
-	return m.help.View(m.keys)
+	return m.help.View(m.Keys)
 }
 
 type SelectAuthKeyMap struct {

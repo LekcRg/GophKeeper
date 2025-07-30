@@ -2,6 +2,7 @@ package nav
 
 import (
 	"github.com/LekcRg/GophKeeper/internal/client/components"
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -9,6 +10,8 @@ type Navigation struct {
 	Inputs     []components.TextInput
 	Buttons    []components.Button
 	focusIndex int
+	Up         key.Binding
+	Down       key.Binding
 }
 
 func (n *Navigation) lastIndex() int {
@@ -56,11 +59,11 @@ func (n *Navigation) updateFocus() []tea.Cmd {
 	return cmds
 }
 
-func (n *Navigation) HandleKeyPress(keyMsg tea.KeyMsg) []tea.Cmd {
-	switch keyMsg.Type {
-	case tea.KeyUp, tea.KeyShiftTab:
+func (n *Navigation) HandleKeyPress(k tea.KeyMsg) []tea.Cmd {
+	switch {
+	case key.Matches(k, n.Up):
 		return n.MoveToPrev()
-	case tea.KeyDown, tea.KeyTab:
+	case key.Matches(k, n.Down):
 		return n.MoveToNext()
 	}
 

@@ -2,10 +2,12 @@ package views
 
 import (
 	"github.com/LekcRg/GophKeeper/internal/client/actions"
+	"github.com/LekcRg/GophKeeper/internal/client/components/help"
 	"github.com/LekcRg/GophKeeper/internal/client/msgs"
 	"github.com/LekcRg/GophKeeper/internal/client/req"
 	"github.com/LekcRg/GophKeeper/internal/client/router"
 	"github.com/LekcRg/GophKeeper/internal/config"
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"go.uber.org/zap"
 )
@@ -35,6 +37,7 @@ func New(logger *zap.Logger, cfg *config.ClientConfig) *Views {
 		router.TokenAuthView:   NewKeyAuth(acts),
 		router.UpdateTokenView: NewUpdateKey(acts),
 		router.CryptoPassView:  NewCryptoPass(acts),
+		router.ListView:        NewList(),
 	}
 
 	m := &Views{
@@ -79,11 +82,11 @@ func (m *Views) handleSelectAuth(msg msgs.SelectAuthMsg) tea.Cmd {
 func (m *Views) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch typeMsg := msg.(type) {
 	case tea.KeyMsg:
-		if typeMsg.Type == tea.KeyCtrlC {
+		if key.Matches(typeMsg, help.Quit) {
 			return m, tea.Quit
 		}
 
-		if typeMsg.Type == tea.KeyEsc && m.router.IsAuthenticationView() {
+		if key.Matches(typeMsg, help.Back) && m.router.IsAuthenticationView() {
 			return m, m.router.SwitchTo(router.SelectAuthView)
 		}
 	case msgs.SelectAuthMsg:

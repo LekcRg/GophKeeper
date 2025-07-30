@@ -51,9 +51,11 @@ func NewSelectAuth(addr string) tea.Model {
 		},
 	}
 
+	h := help.NewSelectAuth()
+
 	return &SelectAuthModel{
-		form: form.NewForm(inputs, buttons),
-		help: help.NewSelectAuth(),
+		form: form.NewForm(inputs, buttons, h.Keys.Up, h.Keys.Down),
+		help: h,
 	}
 }
 

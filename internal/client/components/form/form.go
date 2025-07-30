@@ -4,10 +4,12 @@ import (
 	"strings"
 
 	"github.com/LekcRg/GophKeeper/internal/client/components"
+	"github.com/LekcRg/GophKeeper/internal/client/components/help"
 	"github.com/LekcRg/GophKeeper/internal/client/msgs"
 	"github.com/LekcRg/GophKeeper/internal/client/nav"
 	"github.com/LekcRg/GophKeeper/internal/client/styles"
 	"github.com/LekcRg/GophKeeper/internal/server/service/valid"
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
@@ -20,7 +22,10 @@ type Form struct {
 }
 
 func NewForm(
-	inputs []components.TextInput, buttons []components.Button,
+	inputs []components.TextInput,
+	buttons []components.Button,
+	up key.Binding,
+	down key.Binding,
 ) *Form {
 	inputNames := make([]string, len(inputs))
 	validRules := make([]*validation.KeyRules, len(inputs))
@@ -35,6 +40,8 @@ func NewForm(
 		nav: nav.Navigation{
 			Inputs:  inputs,
 			Buttons: buttons,
+			Up:      up,
+			Down:    down,
 		},
 		Errors:     NewErrors(inputNames),
 		validRules: validRules,
@@ -96,7 +103,7 @@ func (m *Form) Update(msg tea.Msg) (*Form, tea.Cmd) {
 	case tea.KeyMsg:
 		navCmds := m.nav.HandleKeyPress(msg)
 
-		if msg.Type == tea.KeyEnter {
+		if key.Matches(msg, help.Select) {
 			if !m.nav.IsOnButton() {
 				m.nav.MoveToNext()
 				return m, tea.Batch(append(inputCmds, navCmds...)...)

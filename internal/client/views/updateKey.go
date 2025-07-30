@@ -11,12 +11,13 @@ import (
 	"github.com/LekcRg/GophKeeper/internal/client/msgs"
 	"github.com/LekcRg/GophKeeper/internal/client/styles"
 	"github.com/LekcRg/GophKeeper/internal/models"
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 type UpdateKeyModel struct {
 	form       *form.Form
-	help       *help.Register
+	help       *help.Auth
 	actions    *actions.Actions
 	key        string
 	successBtn components.Button
@@ -48,9 +49,11 @@ func NewUpdateKey(acts *actions.Actions) tea.Model {
 		},
 	}
 
+	h := help.NewAuth()
+
 	return &UpdateKeyModel{
-		form:    form.NewForm(inputs, buttons),
-		help:    help.NewRegister(),
+		form:    form.NewForm(inputs, buttons, h.Keys.Up, h.Keys.Down),
+		help:    h,
 		actions: acts,
 		successBtn: components.Button{
 			Label:   "ok",
@@ -87,7 +90,7 @@ func (m *UpdateKeyModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case msgs.FormSubmitMsg:
 		return m, m.handleSubmit(typeMsg)
 	case tea.KeyMsg:
-		if m.key != "" && typeMsg.Type == tea.KeyEnter {
+		if m.key != "" && key.Matches(typeMsg, help.Select) {
 			return m, func() tea.Msg {
 				return msgs.UpdateKeySuccessMsg(m.key)
 			}
