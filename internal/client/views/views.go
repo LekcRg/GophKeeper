@@ -6,6 +6,7 @@ import (
 	"github.com/LekcRg/GophKeeper/internal/client/msgs"
 	"github.com/LekcRg/GophKeeper/internal/client/req"
 	"github.com/LekcRg/GophKeeper/internal/client/router"
+	"github.com/LekcRg/GophKeeper/internal/client/state"
 	"github.com/LekcRg/GophKeeper/internal/config"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
@@ -16,6 +17,7 @@ type Views struct {
 	actions *actions.Actions
 	log     *zap.Logger
 	router  router.ViewRouter
+	state   *state.State
 }
 
 func New(logger *zap.Logger, cfg *config.ClientConfig) *Views {
@@ -31,22 +33,23 @@ func New(logger *zap.Logger, cfg *config.ClientConfig) *Views {
 		currentView = router.CryptoPassView
 	}
 
+	state := state.New(request, cfg)
+
 	v := router.Views{
 		router.SelectAuthView:  NewSelectAuth(cfg.Address),
 		router.RegisterView:    NewRegister(acts, logger),
 		router.TokenAuthView:   NewKeyAuth(acts),
 		router.UpdateTokenView: NewUpdateKey(acts),
 		router.CryptoPassView:  NewCryptoPass(acts),
-		router.ListView:        NewList(),
+		router.ListView:        NewList(logger, state),
 	}
 
-	m := &Views{
+	return &Views{
 		router:  *router.NewViewRouter(currentView, v),
 		actions: acts,
 		log:     logger,
+		state:   state,
 	}
-
-	return m
 }
 
 func (m *Views) Init() tea.Cmd {

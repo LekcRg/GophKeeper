@@ -21,3 +21,5 @@ type CredentialsBytesMsg struct {
 type UpdateKeySuccessMsg string
 
 type CryptoPassValid struct{}
+
+type ListLoaded struct{}

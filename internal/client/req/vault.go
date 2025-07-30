@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/LekcRg/GophKeeper/internal/models"
+	"github.com/LekcRg/GophKeeper/internal/routes"
 )
 
 func (r *Request) CreateVaultItem(
@@ -32,4 +33,27 @@ func (r *Request) CreateVaultItem(
 	}
 
 	return res, nil
+}
+
+func (r *Request) VaultGetAll(ctx context.Context) ([]models.VaultItem, error) {
+	var (
+		resBody []models.VaultItem
+		resErrs map[string]string
+	)
+
+	res, err := r.client.R().
+		SetHeader("Authorization", "Bearer "+r.config.Key).
+		SetContext(ctx).
+		SetResult(&resBody).
+		SetError(&resErrs).
+		Get(r.config.Address + routes.VaultGetAll)
+	if err != nil {
+		return resBody, err
+	}
+
+	if res.StatusCode() > minErrStatus {
+		return resBody, &ResError{Errors: resErrs}
+	}
+
+	return resBody, nil
 }

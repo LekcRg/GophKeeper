@@ -1,16 +1,25 @@
 package styles
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"github.com/charmbracelet/bubbles/table"
+	"github.com/charmbracelet/lipgloss"
+)
 
 //nolint:gochecknoglobals // styles
 var (
-	FocusedStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
-	BlurredStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
-	ErrorStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("9"))
-	CursorStyle  = FocusedStyle
-	NoStyle      = lipgloss.NewStyle()
-	Green        = lipgloss.Color("#00D084")
-	Gray         = lipgloss.Color("#888888")
+	Gray           = lipgloss.Color("240")
+	Green          = lipgloss.Color("#00D084")
+	FocusColor     = lipgloss.Color("205")
+	FocusColorText = lipgloss.Color("#000")
+	ErrorColor     = lipgloss.Color("9")
+	FocusedStyle   = lipgloss.NewStyle().Foreground(FocusColor)
+	BlurredStyle   = lipgloss.NewStyle().Foreground(Gray)
+	ErrorStyle     = lipgloss.NewStyle().Foreground(ErrorColor)
+	CursorStyle    = FocusedStyle
+	NoStyle        = lipgloss.NewStyle()
+	Border         = lipgloss.NewStyle().
+			BorderStyle(lipgloss.NormalBorder()).
+			BorderForeground(Gray)
 )
 
 //nolint:mnd // styles
@@ -29,3 +38,18 @@ var (
 			Foreground(Gray).
 			Italic(true)
 )
+
+func GetTableStyles() table.Styles {
+	s := table.DefaultStyles()
+	s.Header = s.Header.
+		BorderStyle(lipgloss.NormalBorder()).
+		BorderForeground(Gray).
+		BorderBottom(true).
+		Bold(false)
+	s.Selected = s.Selected.
+		Foreground(lipgloss.Color(FocusColorText)).
+		Background(FocusColor).
+		Bold(false)
+
+	return s
+}
