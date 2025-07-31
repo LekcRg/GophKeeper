@@ -1,4 +1,4 @@
-package views
+package create
 
 import (
 	"context"
@@ -15,7 +15,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type CreateVaultPasswordModel struct {
+type PasswordModel struct {
 	help    *help.Auth
 	actions *actions.Actions
 	log     *zap.Logger
@@ -23,68 +23,73 @@ type CreateVaultPasswordModel struct {
 }
 
 var (
-	CreateVaultNameInput     = "name"
-	CreateVaultLoginInput    = "login"
-	CreateVaultPasswordInput = "password"
-	CreateVaultURLInput      = "url"
-	CreateVaultCreateBtn     = "create"
-	CreateVaultGenerateBtn   = "gen-password"
+	passwordNameInput     = "name"
+	passwordLoginInput    = "login"
+	passwordPasswordInput = "password"
+	passwordURLInput      = "url"
+	passwordCreateBtn     = "create"
+	passwordGenerateBtn   = "gen-password"
 )
 
-func NewCreateVaultPassword(acts *actions.Actions, log *zap.Logger) tea.Model {
+func NewPassword(acts *actions.Actions, log *zap.Logger) tea.Model {
 	inputs := []components.TextInput{
 		components.NewTextInput(components.TextInputOpts{
 			Placeholder: "Name",
 			IsFocus:     true,
-			Name:        CreateVaultNameInput,
+			Name:        passwordNameInput,
 			Valid:       []validation.Rule{validation.Required},
 		}),
 		components.NewTextInput(components.TextInputOpts{
 			Placeholder: "Login",
-			Name:        CreateVaultLoginInput,
+			Name:        passwordLoginInput,
 		}),
 		components.NewTextInput(components.TextInputOpts{
 			Placeholder: "Password",
-			Name:        CreateVaultPasswordInput,
+			Name:        passwordPasswordInput,
 		}),
 		components.NewTextInput(components.TextInputOpts{
 			Placeholder: "URL",
-			Name:        CreateVaultURLInput,
+			Name:        passwordURLInput,
 		}),
 	}
 
 	buttons := []components.Button{
 		{
 			Label: "Create",
-			Name:  CreateVaultCreateBtn,
+			Name:  passwordCreateBtn,
 		},
 		// {
 		// 	Label: "Generate password",
-		// 	Name:  CreateVaultGenerateBtn,
+		// 	Name:  passwordGenerateBtn,
 		// },
 	}
 
 	h := help.NewAuth()
 
-	return &CreateVaultPasswordModel{
+	return &PasswordModel{
 		actions: acts,
-		form:    form.NewForm(inputs, buttons, h.Keys.Up, h.Keys.Down),
-		help:    h,
-		log:     log,
+		form: form.NewForm(form.FormOpts{
+			Inputs:  inputs,
+			Buttons: buttons,
+			Up:      h.Keys.Up,
+			Down:    h.Keys.Down,
+		}),
+		help: h,
+		log:  log,
 	}
 }
 
-func (m *CreateVaultPasswordModel) Init() tea.Cmd {
+func (m *PasswordModel) Init() tea.Cmd {
 	return m.form.Init()
 }
 
-func (m *CreateVaultPasswordModel) handleSubmit(msg msgs.FormSubmitMsg) tea.Cmd {
+func (m *PasswordModel) handleSubmit(msg msgs.FormSubmitMsg) tea.Cmd {
 	return func() tea.Msg {
-		name := msg.Values[CreateVaultNameInput]
+		name := msg.Values[passwordNameInput]
 		data := models.VaultItemDataPassword{
-			Login:    msg.Values[CreateVaultLoginInput],
-			Password: msg.Values[CreateVaultPasswordInput],
-			URL:      msg.Values[CreateVaultURLInput],
+			Login:    msg.Values[passwordLoginInput],
+			Password: msg.Values[passwordPasswordInput],
+			URL:      msg.Values[passwordURLInput],
 		}
 
 		res, err := m.actions.CreateVaultItem(context.Background(), name, "password", data)
@@ -96,7 +101,7 @@ func (m *CreateVaultPasswordModel) handleSubmit(msg msgs.FormSubmitMsg) tea.Cmd 
 	}
 }
 
-func (m *CreateVaultPasswordModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *PasswordModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg.(type) {
 	default:
 		switch typeMsg := msg.(type) {
@@ -111,7 +116,7 @@ func (m *CreateVaultPasswordModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 }
 
-func (m *CreateVaultPasswordModel) View() string {
+func (m *PasswordModel) View() string {
 	var b strings.Builder
 
 	b.WriteString(m.form.View())

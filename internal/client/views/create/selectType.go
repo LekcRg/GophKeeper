@@ -1,4 +1,4 @@
-package views
+package create
 
 import (
 	"strings"
@@ -40,7 +40,11 @@ func NewSelectType() tea.Model {
 	h := help.NewSelectAuth()
 
 	return &SelectTypeModel{
-		form: form.NewForm([]components.TextInput{}, buttons, h.Keys.Up, h.Keys.Down),
+		form: form.NewForm(form.FormOpts{
+			Buttons: buttons,
+			Up:      h.Keys.Up,
+			Down:    h.Keys.Down,
+		}),
 		help: h,
 	}
 }

@@ -26,7 +26,7 @@ func (r *Request) CreateVaultItem(
 		return models.VaultItem{}, err
 	}
 
-	if res.StatusCode() > 299 {
+	if res.StatusCode() > minErrStatus {
 		return models.VaultItem{}, &ResError{Errors: resErrs}
 	}
 

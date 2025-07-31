@@ -19,6 +19,14 @@ var (
 		key.WithKeys("down", "tab"),
 		key.WithHelp("↓/Tab", "move down"),
 	)
+	UpShiftOnly = key.NewBinding(
+		key.WithKeys("shift+tab"),
+		key.WithHelp("Shift+Tab", "move up"),
+	)
+	DownShiftOnly = key.NewBinding(
+		key.WithKeys("tab"),
+		key.WithHelp("Tab", "move down"),
+	)
 	UpK = key.NewBinding(
 		key.WithKeys("up", "k", "K"),
 		key.WithHelp("↑/k", "move up"),

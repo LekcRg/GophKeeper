@@ -1,4 +1,4 @@
-package views
+package auth
 
 import (
 	"context"
@@ -62,9 +62,14 @@ func NewRegister(acts *actions.Actions, log *zap.Logger) tea.Model {
 
 	return &RegisterModel{
 		actions: acts,
-		form:    form.NewForm(inputs, buttons, h.Keys.Up, h.Keys.Down),
-		help:    h,
-		log:     log,
+		form: form.NewForm(form.FormOpts{
+			Inputs:  inputs,
+			Buttons: buttons,
+			Up:      h.Keys.Up,
+			Down:    h.Keys.Down,
+		}),
+		help: h,
+		log:  log,
 	}
 }
 

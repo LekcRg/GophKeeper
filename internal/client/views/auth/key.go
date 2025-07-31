@@ -1,6 +1,7 @@
-package views
+package auth
 
 import (
+	"context"
 	"strings"
 
 	"github.com/LekcRg/GophKeeper/internal/client/actions"
@@ -11,21 +12,21 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type CryptoPassModel struct {
+type KeyModel struct {
 	form    *form.Form
 	help    *help.Auth
 	actions *actions.Actions
 }
 
-const cryptoPassInputName = "crypto-password"
+func NewKey(acts *actions.Actions) tea.Model {
+	inputWidth := 50
 
-func NewCryptoPass(acts *actions.Actions) tea.Model {
 	inputs := []components.TextInput{
 		components.NewTextInput(components.TextInputOpts{
-			Placeholder: "Crypto password",
-			IsPassword:  true,
-			Name:        cryptoPassInputName,
+			Placeholder: "Key",
+			Name:        "key",
 			IsFocus:     true,
+			Width:       inputWidth,
 		}),
 	}
 
@@ -38,21 +39,37 @@ func NewCryptoPass(acts *actions.Actions) tea.Model {
 
 	h := help.NewAuth()
 
-	return &CryptoPassModel{
-		form:    form.NewForm(inputs, buttons, h.Keys.Up, h.Keys.Down),
+	return &KeyModel{
+		form: form.NewForm(form.FormOpts{
+			Inputs:  inputs,
+			Buttons: buttons,
+			Up:      h.Keys.Up,
+			Down:    h.Keys.Down,
+		}),
 		help:    h,
 		actions: acts,
 	}
 }
 
-func (m *CryptoPassModel) Init() tea.Cmd {
+func (m *KeyModel) Init() tea.Cmd {
 	return m.form.Init()
 }
 
-func (m *CryptoPassModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *KeyModel) handleSubmit(msg msgs.FormSubmitMsg) tea.Cmd {
+	return func() tea.Msg {
+		res, err := m.actions.GetCredentials(context.Background(), msg.Values["key"])
+		if err != nil {
+			return msgs.ErrorMsg(err)
+		}
+
+		return res
+	}
+}
+
+func (m *KeyModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch typeMsg := msg.(type) {
 	case msgs.FormSubmitMsg:
-		return m, m.actions.CheckCryptoPassword(typeMsg, cryptoPassInputName)
+		return m, m.handleSubmit(typeMsg)
 	default:
 		var newMsg tea.Cmd
 		m.form, newMsg = m.form.Update(msg)
@@ -61,7 +78,7 @@ func (m *CryptoPassModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 }
 
-func (m *CryptoPassModel) View() string {
+func (m *KeyModel) View() string {
 	var b strings.Builder
 
 	b.WriteString(m.form.View())

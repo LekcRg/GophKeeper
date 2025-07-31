@@ -7,8 +7,6 @@ import (
 	"github.com/LekcRg/GophKeeper/internal/routes"
 )
 
-const minErrStatus = 299
-
 func (r *Request) getToken(
 	ctx context.Context, body any, path string,
 ) (models.APIKeyRes, error) {

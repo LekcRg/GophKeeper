@@ -10,6 +10,7 @@ import (
 	"github.com/LekcRg/GophKeeper/internal/client/styles"
 	"github.com/LekcRg/GophKeeper/internal/server/service/valid"
 	"github.com/charmbracelet/bubbles/key"
+	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
@@ -21,27 +22,31 @@ type Form struct {
 	nav        nav.Navigation
 }
 
-func NewForm(
-	inputs []components.TextInput,
-	buttons []components.Button,
-	up key.Binding,
-	down key.Binding,
-) *Form {
-	inputNames := make([]string, len(inputs))
-	validRules := make([]*validation.KeyRules, len(inputs))
+type FormOpts struct {
+	Inputs    []components.TextInput
+	Buttons   []components.Button
+	Textareas []components.Textarea
+	Up        key.Binding
+	Down      key.Binding
+}
 
-	for i := range inputs {
-		input := &inputs[i]
+func NewForm(opts FormOpts) *Form {
+	inputNames := make([]string, len(opts.Inputs))
+	validRules := make([]*validation.KeyRules, len(opts.Inputs))
+
+	for i := range opts.Inputs {
+		input := &opts.Inputs[i]
 		inputNames[i] = input.Name
 		validRules[i] = validation.Key(input.Name, input.Valid...)
 	}
 
 	m := &Form{
 		nav: nav.Navigation{
-			Inputs:  inputs,
-			Buttons: buttons,
-			Up:      up,
-			Down:    down,
+			Inputs:    opts.Inputs,
+			Buttons:   opts.Buttons,
+			Textareas: opts.Textareas,
+			Up:        opts.Up,
+			Down:      opts.Down,
 		},
 		Errors:     NewErrors(inputNames),
 		validRules: validRules,
@@ -51,7 +56,7 @@ func NewForm(
 }
 
 func (m *Form) Init() tea.Cmd {
-	return textinput.Blink
+	return tea.Batch(textinput.Blink, textarea.Blink)
 }
 
 func (m *Form) GetValues() map[string]string {
@@ -96,16 +101,26 @@ func (m *Form) updateInputs(msg tea.Msg) []tea.Cmd {
 	return cmds
 }
 
+func (m *Form) UpdateTextarea(msg tea.Msg) []tea.Cmd {
+	cmds := make([]tea.Cmd, len(m.nav.Textareas))
+	for i := range m.nav.Textareas {
+		cmds[i] = m.nav.Textareas[i].Update(msg)
+	}
+
+	return cmds
+}
+
 func (m *Form) Update(msg tea.Msg) (*Form, tea.Cmd) {
-	inputCmds := m.updateInputs(msg)
+	inputCmds := append(m.UpdateTextarea(msg), m.updateInputs(msg)...)
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		navCmds := m.nav.HandleKeyPress(msg)
 
 		if key.Matches(msg, help.Select) {
-			if !m.nav.IsOnButton() {
-				m.nav.MoveToNext()
+			if m.nav.IsOnInputs() {
+				navCmds = append(navCmds, m.nav.MoveToNext()...)
+
 				return m, tea.Batch(append(inputCmds, navCmds...)...)
 			}
 
@@ -137,7 +152,23 @@ func (m *Form) View() string {
 			))
 			b.WriteRune('\n')
 		}
+	}
 
+	if len(m.nav.Inputs) > 0 && len(m.nav.Textareas) > 0 {
+		b.WriteRune('\n')
+	}
+
+	for i := range m.nav.Textareas {
+		ta := &m.nav.Textareas[i]
+		b.WriteString(ta.View())
+		b.WriteRune('\n')
+		b.WriteString(styles.ErrorStyle.Render(
+			m.Errors.GetFieldError(ta.Name),
+		))
+		b.WriteRune('\n')
+	}
+
+	if len(m.nav.Inputs) > 0 || len(m.nav.Textareas) > 0 {
 		b.WriteRune('\n')
 		b.WriteString(styles.ErrorStyle.Render(m.Errors.Message))
 		b.WriteRune('\n')

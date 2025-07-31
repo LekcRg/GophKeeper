@@ -1,4 +1,4 @@
-package views
+package auth
 
 import (
 	"context"
@@ -52,7 +52,12 @@ func NewUpdateKey(acts *actions.Actions) tea.Model {
 	h := help.NewAuth()
 
 	return &UpdateKeyModel{
-		form:    form.NewForm(inputs, buttons, h.Keys.Up, h.Keys.Down),
+		form: form.NewForm(form.FormOpts{
+			Inputs:  inputs,
+			Buttons: buttons,
+			Up:      h.Keys.Up,
+			Down:    h.Keys.Down,
+		}),
 		help:    h,
 		actions: acts,
 		successBtn: components.Button{

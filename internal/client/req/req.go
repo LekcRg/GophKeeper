@@ -9,6 +9,8 @@ type ResError struct {
 	Errors map[string]string
 }
 
+const minErrStatus = 299
+
 func (e *ResError) Error() string {
 	errText := "response errors: "
 

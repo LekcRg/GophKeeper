@@ -7,6 +7,8 @@ import (
 	"github.com/LekcRg/GophKeeper/internal/client/req"
 	"github.com/LekcRg/GophKeeper/internal/client/router"
 	"github.com/LekcRg/GophKeeper/internal/client/state"
+	"github.com/LekcRg/GophKeeper/internal/client/views/auth"
+	"github.com/LekcRg/GophKeeper/internal/client/views/create"
 	"github.com/LekcRg/GophKeeper/internal/config"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
@@ -35,14 +37,15 @@ func New(logger *zap.Logger, cfg *config.ClientConfig) *Views {
 	}
 
 	v := router.Views{
-		router.SelectAuthView:      NewSelectAuth(cfg.Address),
-		router.RegisterView:        NewRegister(acts, logger),
-		router.TokenAuthView:       NewKeyAuth(acts),
-		router.UpdateTokenView:     NewUpdateKey(acts),
-		router.CryptoPassView:      NewCryptoPass(acts),
+		router.SelectAuthView:      auth.NewSelect(cfg.Address),
+		router.RegisterView:        auth.NewRegister(acts, logger),
+		router.TokenAuthView:       auth.NewKey(acts),
+		router.UpdateTokenView:     auth.NewUpdateKey(acts),
+		router.CryptoPassView:      auth.NewCryptoPass(acts),
 		router.ListView:            NewList(logger, state),
-		router.SelectVaultType:     NewSelectType(),
-		router.CreateVaultPassword: NewCreateVaultPassword(acts, logger),
+		router.SelectVaultType:     create.NewSelectType(),
+		router.CreateVaultPassword: create.NewPassword(acts, logger),
+		router.CreateVaultNote:     create.NewNote(acts, logger),
 	}
 
 	return &Views{
@@ -83,7 +86,7 @@ func (m *Views) handleSelectAuth(msg msgs.SelectAuthMsg) tea.Cmd {
 	return m.router.SwitchTo(router.CurrentView(msg.Selected))
 }
 
-func (m *Views) handleCreateVaultItem(msg msgs.CreateVaultSuccess) tea.Cmd {
+func (m *Views) handleUpdateVaultState(msg msgs.CreateVaultSuccess) tea.Cmd {
 	return func() tea.Msg {
 		m.state.AddVaultItem(msg.Item)
 
@@ -128,7 +131,7 @@ func (m *Views) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case msgs.SelectTypeMsg:
 		return m, m.router.SwitchTo(router.CurrentView(typeMsg.Selected))
 	case msgs.CreateVaultSuccess:
-		return m, m.handleCreateVaultItem(typeMsg)
+		return m, m.handleUpdateVaultState(typeMsg)
 	case msgs.UpdateAndSwitchToTable:
 		return m, tea.Batch(
 			m.router.SwitchTo(router.ListView),

@@ -26,6 +26,10 @@ type VaultItem struct {
 	UserID              int       `db:"user_id" json:"user_id"`
 }
 
+type VaultNote struct {
+	Text string `json:"text"`
+}
+
 type VaultItemState struct {
 	CreatedAt         time.Time             `json:"created_at"`
 	UpdatedAt         time.Time             `json:"updated_at"`
@@ -33,7 +37,7 @@ type VaultItemState struct {
 	DecryptedCard     VaultItemDataCard     `json:"-"`
 	Name              string                `json:"name"`
 	Type              string                `json:"type"`
-	DecryptedNote     string                `json:"-"`
+	DecryptedNote     VaultNote             `json:"-"`
 	EncryptedData     []byte                `json:"-"`
 	ID                int                   `json:"id"`
 }

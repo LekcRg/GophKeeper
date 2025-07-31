@@ -2,6 +2,7 @@ package styles
 
 import (
 	"github.com/charmbracelet/bubbles/table"
+	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -52,4 +53,29 @@ func GetTableStyles() table.Styles {
 		Bold(false)
 
 	return s
+}
+
+func GetTextareaStyles() (textarea.Style, textarea.Style) {
+	focused := textarea.Style{
+		Base:             NoStyle,
+		CursorLine:       FocusedStyle,
+		CursorLineNumber: FocusedStyle,
+		EndOfBuffer:      lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "254", Dark: "0"}),
+		LineNumber:       NoStyle,
+		Placeholder:      BlurredStyle,
+		Prompt:           NoStyle,
+		Text:             NoStyle,
+	}
+	blurred := textarea.Style{
+		Base:             BlurredStyle,
+		CursorLine:       BlurredStyle,
+		CursorLineNumber: BlurredStyle,
+		EndOfBuffer:      NoStyle,
+		LineNumber:       BlurredStyle,
+		Placeholder:      BlurredStyle,
+		Prompt:           NoStyle,
+		Text:             BlurredStyle,
+	}
+
+	return focused, blurred
 }
