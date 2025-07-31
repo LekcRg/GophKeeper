@@ -18,7 +18,9 @@ func NewVaultRepo(db *sqlx.DB) *VaultRepo {
 	}
 }
 
-func (vr *VaultRepo) CreateItem(ctx context.Context, item models.VaultItem) (models.VaultItem, error) {
+func (vr *VaultRepo) CreateItem(
+	ctx context.Context, item models.VaultItem,
+) (models.VaultItem, error) {
 	res := models.VaultItem{}
 	query := `INSERT INTO vault (user_id, name, type, encrypted_data)
 	VALUES (:user_id, :name, :type, :encrypted_data)

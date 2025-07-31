@@ -16,11 +16,12 @@ import (
 )
 
 type ListModels struct {
-	table table.Model
-	help  *help.List
-	log   *zap.Logger
-	state *state.State
-	error string
+	help   *help.List
+	log    *zap.Logger
+	state  *state.State
+	error  string
+	table  table.Model
+	loaded bool
 }
 
 func NewList(l *zap.Logger, state *state.State) *ListModels {
@@ -55,15 +56,22 @@ func NewList(l *zap.Logger, state *state.State) *ListModels {
 	}
 }
 
-func (m *ListModels) Init() tea.Cmd {
-	return tea.Batch(func() tea.Msg {
-		err := m.state.LoadVault(context.Background())
-		if err != nil {
-			return msgs.ErrorMsg(err)
-		}
+func (m *ListModels) load() tea.Msg {
+	err := m.state.LoadVault(context.Background())
+	if err != nil {
+		m.log.Error("state LoadVault error", zap.Error(err))
+		return msgs.ErrorMsg(err)
+	}
 
-		return msgs.ListLoaded{}
-	}, tea.WindowSize())
+	return msgs.ListLoaded{}
+}
+
+func (m *ListModels) Init() tea.Cmd {
+	if m.loaded {
+		return tea.WindowSize()
+	}
+
+	return tea.Batch(m.load, tea.WindowSize())
 }
 
 func (m *ListModels) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -75,13 +83,25 @@ func (m *ListModels) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.table.SetHeight(msg.Height - margin)
 	case tea.KeyMsg:
 		switch {
-		case key.Matches(msg, help.Select):
-			selectedID, err := strconv.Atoi(m.table.SelectedRow()[0])
-			if err != nil {
-				m.log.Error("Selected ID is not int error", zap.Error(err))
-			}
+		case key.Matches(msg, m.help.Keys.Select):
+			if len(m.state.Table) > 0 {
+				selectedID, err := strconv.Atoi(m.table.SelectedRow()[0])
+				if err != nil {
+					errText := "Selected vault ID is not int"
+					m.log.Error(errText, zap.Error(err))
+					m.error = errText
 
-			m.log.Info("Selected ID", zap.Int("selectedID", selectedID))
+					return m, nil
+				}
+
+				return m, func() tea.Msg {
+					return msgs.SelectVaultItem(selectedID)
+				}
+			}
+		case key.Matches(msg, m.help.Keys.Create):
+			return m, func() tea.Msg {
+				return msgs.ToCreateVaultItem{}
+			}
 		}
 	case msgs.ListLoaded:
 		m.table.SetRows(m.state.Table)

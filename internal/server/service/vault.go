@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/base64"
 
 	"github.com/LekcRg/GophKeeper/internal/config"
 	"github.com/LekcRg/GophKeeper/internal/models"
@@ -40,5 +41,15 @@ func (vs *VaultService) CreateItem(
 func (vs *VaultService) GetAllItems(
 	ctx context.Context, id int,
 ) ([]models.VaultItem, error) {
-	return vs.repo.GetAllItems(ctx, id)
+	res, err := vs.repo.GetAllItems(ctx, id)
+	if err != nil {
+		return []models.VaultItem{}, err
+	}
+
+	for i := range res {
+		item := &res[i]
+		item.EncryptedDataString = base64.StdEncoding.EncodeToString(item.EncryptedData)
+	}
+
+	return res, nil
 }

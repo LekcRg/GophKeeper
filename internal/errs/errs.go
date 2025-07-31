@@ -37,6 +37,7 @@ var (
 	ErrSaltMustBase64   = errors.New("salt must be encoded with base64")
 	ErrSaltNotValidLen  = errors.New("invalid salt")
 	ErrInvalidEncrypted = errors.New("invalid encrypted data")
+	ErrEmptySalt        = errors.New("salt must not empty")
 )
 
 // Vault errors.

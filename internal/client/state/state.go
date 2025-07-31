@@ -6,6 +6,7 @@ import (
 
 	"github.com/LekcRg/GophKeeper/internal/client/req"
 	"github.com/LekcRg/GophKeeper/internal/config"
+	"github.com/LekcRg/GophKeeper/internal/crypto"
 	"github.com/LekcRg/GophKeeper/internal/models"
 	"github.com/charmbracelet/bubbles/table"
 )
@@ -16,6 +17,7 @@ type State struct {
 	req             *req.Request
 	config          *config.ClientConfig
 	Table           []table.Row
+	CryptoKey       []byte
 }
 
 func New(r *req.Request, cfg *config.ClientConfig) *State {
@@ -45,4 +47,14 @@ func (s *State) updateTable() {
 		formattedDate := item.UpdatedAt.Format("2 January 2006")
 		s.Table[i] = table.Row{id, item.Name, item.Type, formattedDate}
 	}
+}
+
+func (s *State) SaveCryptoPassword(password string) {
+	s.CryptoKey = crypto.DeriveEncryptionKey(password, s.config.Salt)
+}
+
+func (s *State) AddVaultItem(item models.VaultItem) {
+	s.Vault = append(s.Vault, item)
+
+	s.updateTable()
 }

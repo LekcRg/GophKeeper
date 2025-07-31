@@ -16,8 +16,8 @@ import (
 type Views struct {
 	actions *actions.Actions
 	log     *zap.Logger
-	router  router.ViewRouter
 	state   *state.State
+	router  router.ViewRouter
 }
 
 func New(logger *zap.Logger, cfg *config.ClientConfig) *Views {
@@ -26,22 +26,23 @@ func New(logger *zap.Logger, cfg *config.ClientConfig) *Views {
 	}
 
 	request := req.New(cfg)
-	acts := actions.New(request, logger, cfg)
+	state := state.New(request, cfg)
+	acts := actions.New(request, logger, cfg, state)
 
 	currentView := router.SelectAuthView
 	if cfg.Key != "" {
 		currentView = router.CryptoPassView
 	}
 
-	state := state.New(request, cfg)
-
 	v := router.Views{
-		router.SelectAuthView:  NewSelectAuth(cfg.Address),
-		router.RegisterView:    NewRegister(acts, logger),
-		router.TokenAuthView:   NewKeyAuth(acts),
-		router.UpdateTokenView: NewUpdateKey(acts),
-		router.CryptoPassView:  NewCryptoPass(acts),
-		router.ListView:        NewList(logger, state),
+		router.SelectAuthView:      NewSelectAuth(cfg.Address),
+		router.RegisterView:        NewRegister(acts, logger),
+		router.TokenAuthView:       NewKeyAuth(acts),
+		router.UpdateTokenView:     NewUpdateKey(acts),
+		router.CryptoPassView:      NewCryptoPass(acts),
+		router.ListView:            NewList(logger, state),
+		router.SelectVaultType:     NewSelectType(),
+		router.CreateVaultPassword: NewCreateVaultPassword(acts, logger),
 	}
 
 	return &Views{
@@ -82,6 +83,27 @@ func (m *Views) handleSelectAuth(msg msgs.SelectAuthMsg) tea.Cmd {
 	return m.router.SwitchTo(router.CurrentView(msg.Selected))
 }
 
+func (m *Views) handleCreateVaultItem(msg msgs.CreateVaultSuccess) tea.Cmd {
+	return func() tea.Msg {
+		m.state.AddVaultItem(msg.Item)
+
+		return msgs.UpdateAndSwitchToTable{}
+	}
+}
+
+func (m *Views) handleBack() tea.Msg {
+	switch {
+	case m.router.IsAuthenticationView():
+		return m.router.SwitchTo(router.SelectAuthView)
+	case m.router.CurrentViewRoute() == router.SelectVaultType:
+		return m.router.SwitchTo(router.ListView)
+	case m.router.IsCreateView():
+		return m.router.SwitchTo(router.SelectVaultType)
+	}
+
+	return nil
+}
+
 func (m *Views) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch typeMsg := msg.(type) {
 	case tea.KeyMsg:
@@ -89,8 +111,8 @@ func (m *Views) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 
-		if key.Matches(typeMsg, help.Back) && m.router.IsAuthenticationView() {
-			return m, m.router.SwitchTo(router.SelectAuthView)
+		if key.Matches(typeMsg, help.Back) {
+			return m, m.handleBack
 		}
 	case msgs.SelectAuthMsg:
 		return m, m.handleSelectAuth(typeMsg)
@@ -99,7 +121,19 @@ func (m *Views) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case msgs.UpdateKeySuccessMsg:
 		return m, m.router.SwitchTo(router.SelectAuthView)
 	case msgs.CryptoPassValid:
+		m.state.SaveCryptoPassword(string(typeMsg))
 		return m, m.router.SwitchTo(router.ListView)
+	case msgs.ToCreateVaultItem:
+		return m, m.router.SwitchTo(router.SelectVaultType)
+	case msgs.SelectTypeMsg:
+		return m, m.router.SwitchTo(router.CurrentView(typeMsg.Selected))
+	case msgs.CreateVaultSuccess:
+		return m, m.handleCreateVaultItem(typeMsg)
+	case msgs.UpdateAndSwitchToTable:
+		return m, tea.Batch(
+			m.router.SwitchTo(router.ListView),
+			func() tea.Msg { return msgs.ListLoaded{} },
+		)
 	}
 
 	currentView := m.router.Current()

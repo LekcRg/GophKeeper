@@ -11,17 +11,17 @@ type TextInputOpts struct {
 	Placeholder string
 	Name        string
 	Value       string
+	Valid       []validation.Rule
 	CharLimit   int
 	Width       int
 	IsFocus     bool
 	IsPassword  bool
-	Valid       []validation.Rule
 }
 
 type TextInput struct {
-	Name string
-	textinput.Model
+	Name  string
 	Valid []validation.Rule
+	textinput.Model
 }
 
 const (

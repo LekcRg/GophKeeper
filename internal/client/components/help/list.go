@@ -17,6 +17,7 @@ func NewList() *List {
 			Down:   DownJ,
 			Select: Select,
 			Quit:   Quit,
+			Create: Create,
 		},
 		help: help.New(),
 	}
@@ -30,11 +31,12 @@ type ListKeyMap struct {
 	Up     key.Binding
 	Down   key.Binding
 	Select key.Binding
+	Create key.Binding
 	Quit   key.Binding
 }
 
 func (k *ListKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Up, k.Down, k.Select, k.Quit}
+	return []key.Binding{k.Up, k.Down, k.Select, k.Create, k.Quit}
 }
 
 func (k *ListKeyMap) FullHelp() [][]key.Binding {

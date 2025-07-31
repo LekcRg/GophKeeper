@@ -43,4 +43,8 @@ var (
 		key.WithKeys("enter"),
 		key.WithHelp("enter", "select"),
 	)
+	Create = key.NewBinding(
+		key.WithKeys("c", "C"),
+		key.WithHelp("c", "create"),
+	)
 )

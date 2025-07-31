@@ -3,6 +3,7 @@ package actions
 import (
 	"github.com/LekcRg/GophKeeper/internal/client/msgs"
 	"github.com/LekcRg/GophKeeper/internal/client/req"
+	"github.com/LekcRg/GophKeeper/internal/client/state"
 	"github.com/LekcRg/GophKeeper/internal/config"
 	"go.uber.org/zap"
 )
@@ -11,13 +12,18 @@ type Actions struct {
 	req    *req.Request
 	log    *zap.Logger
 	config *config.ClientConfig
+	state  *state.State
 }
 
-func New(request *req.Request, log *zap.Logger, cfg *config.ClientConfig) *Actions {
+func New(
+	request *req.Request, log *zap.Logger,
+	cfg *config.ClientConfig, st *state.State,
+) *Actions {
 	return &Actions{
 		req:    request,
 		log:    log,
 		config: cfg,
+		state:  st,
 	}
 }
 

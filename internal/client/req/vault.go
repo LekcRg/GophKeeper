@@ -2,37 +2,35 @@ package req
 
 import (
 	"context"
-	"errors"
-	"log"
 
 	"github.com/LekcRg/GophKeeper/internal/models"
 	"github.com/LekcRg/GophKeeper/internal/routes"
 )
 
 func (r *Request) CreateVaultItem(
-	ctx context.Context, token string, item models.VaultCreateItemReq,
+	ctx context.Context, item models.VaultCreateItemReq,
 ) (models.VaultItem, error) {
 	var (
-		res     models.VaultItem
+		resBody models.VaultItem
 		resErrs map[string]string
 	)
 
-	_, err := r.client.R().
+	res, err := r.client.R().
+		SetHeader("Authorization", "Bearer "+r.config.Key).
 		SetContext(ctx).
 		SetBody(item).
-		SetResult(&res).
+		SetResult(&resBody).
 		SetError(&resErrs).
-		Post("http://localhost:8080/vault/create")
+		Post(r.config.Address + routes.VaultCreateItem)
 	if err != nil {
 		return models.VaultItem{}, err
 	}
 
-	if len(resErrs) > 0 {
-		log.Println(resErrs)
-		return models.VaultItem{}, errors.New("req error")
+	if res.StatusCode() > 299 {
+		return models.VaultItem{}, &ResError{Errors: resErrs}
 	}
 
-	return res, nil
+	return resBody, nil
 }
 
 func (r *Request) VaultGetAll(ctx context.Context) ([]models.VaultItem, error) {

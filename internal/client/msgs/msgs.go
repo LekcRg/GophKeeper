@@ -1,5 +1,7 @@
 package msgs
 
+import "github.com/LekcRg/GophKeeper/internal/models"
+
 type ErrorMsg error
 
 type SelectAuthMsg struct {
@@ -20,6 +22,20 @@ type CredentialsBytesMsg struct {
 
 type UpdateKeySuccessMsg string
 
-type CryptoPassValid struct{}
+type CryptoPassValid string
 
 type ListLoaded struct{}
+
+type SelectVaultItem int
+
+type ToCreateVaultItem struct{}
+
+type SelectTypeMsg struct {
+	Selected string
+}
+
+type CreateVaultSuccess struct {
+	Item models.VaultItem
+}
+
+type UpdateAndSwitchToTable struct{}

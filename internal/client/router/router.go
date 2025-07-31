@@ -14,12 +14,17 @@ type ViewRouter struct {
 }
 
 const (
-	SelectAuthView  CurrentView = "select-auth"
-	RegisterView    CurrentView = "register"
-	TokenAuthView   CurrentView = "token"
-	UpdateTokenView CurrentView = "update-token"
-	CryptoPassView  CurrentView = "crypto-pass"
-	ListView        CurrentView = "list"
+	SelectAuthView      CurrentView = "select-auth"
+	RegisterView        CurrentView = "register"
+	TokenAuthView       CurrentView = "token"
+	UpdateTokenView     CurrentView = "update-token"
+	CryptoPassView      CurrentView = "crypto-pass"
+	ListView            CurrentView = "list"
+	SelectVaultType     CurrentView = "select-vault-type"
+	CreateVaultPassword CurrentView = "password"
+	CreateVaultNote     CurrentView = "note"
+	CreateVaultCard     CurrentView = "card"
+	CreateVaultBinary   CurrentView = "binary"
 )
 
 func NewViewRouter(current CurrentView, v Views) *ViewRouter {
@@ -44,9 +49,20 @@ func (r *ViewRouter) IsAuthenticationView() bool {
 		r.currentView == UpdateTokenView
 }
 
+func (r *ViewRouter) IsCreateView() bool {
+	return r.currentView == CreateVaultPassword ||
+		r.currentView == CreateVaultNote ||
+		r.currentView == CreateVaultCard ||
+		r.currentView == CreateVaultBinary
+}
+
 func (r *ViewRouter) SwitchTo(view CurrentView) tea.Cmd {
 	r.currentView = view
 	return r.Init()
+}
+
+func (r *ViewRouter) CurrentViewRoute() CurrentView {
+	return r.currentView
 }
 
 func (r *ViewRouter) Current() tea.Model {

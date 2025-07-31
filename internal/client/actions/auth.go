@@ -98,6 +98,6 @@ func (a *Actions) CheckCryptoPassword(form msgs.FormSubmitMsg, passwordInput str
 			return msgs.ErrorMsg(err)
 		}
 
-		return msgs.CryptoPassValid{}
+		return msgs.CryptoPassValid(passwordInput)
 	}
 }

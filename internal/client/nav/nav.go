@@ -7,11 +7,11 @@ import (
 )
 
 type Navigation struct {
+	Up         key.Binding
+	Down       key.Binding
 	Inputs     []components.TextInput
 	Buttons    []components.Button
 	focusIndex int
-	Up         key.Binding
-	Down       key.Binding
 }
 
 func (n *Navigation) lastIndex() int {

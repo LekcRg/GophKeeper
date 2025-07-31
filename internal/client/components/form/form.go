@@ -17,8 +17,8 @@ import (
 
 type Form struct {
 	Errors     *Errors
-	nav        nav.Navigation
 	validRules []*validation.KeyRules
+	nav        nav.Navigation
 }
 
 func NewForm(
@@ -128,18 +128,20 @@ func (m *Form) View() string {
 
 	b.WriteRune('\n')
 
-	for i := range m.nav.Inputs {
-		input := &m.nav.Inputs[i]
-		b.WriteString(input.View())
-		b.WriteString(styles.ErrorStyle.Render(
-			m.Errors.GetFieldError(input.Name),
-		))
+	if len(m.nav.Inputs) > 0 {
+		for i := range m.nav.Inputs {
+			input := &m.nav.Inputs[i]
+			b.WriteString(input.View())
+			b.WriteString(styles.ErrorStyle.Render(
+				m.Errors.GetFieldError(input.Name),
+			))
+			b.WriteRune('\n')
+		}
+
+		b.WriteRune('\n')
+		b.WriteString(styles.ErrorStyle.Render(m.Errors.Message))
 		b.WriteRune('\n')
 	}
-
-	b.WriteRune('\n')
-	b.WriteString(styles.ErrorStyle.Render(m.Errors.Message))
-	b.WriteRune('\n')
 
 	for _, btn := range m.nav.Buttons {
 		b.WriteString(btn.View())
