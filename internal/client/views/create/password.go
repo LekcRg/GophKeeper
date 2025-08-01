@@ -28,7 +28,6 @@ var (
 	passwordPasswordInput = "password"
 	passwordURLInput      = "url"
 	passwordCreateBtn     = "create"
-	passwordGenerateBtn   = "gen-password"
 )
 
 func NewPassword(acts *actions.Actions, log *zap.Logger) tea.Model {
@@ -68,7 +67,7 @@ func NewPassword(acts *actions.Actions, log *zap.Logger) tea.Model {
 
 	return &PasswordModel{
 		actions: acts,
-		form: form.NewForm(form.FormOpts{
+		form: form.NewForm(form.Opts{
 			Inputs:  inputs,
 			Buttons: buttons,
 			Up:      h.Keys.Up,

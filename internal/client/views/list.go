@@ -24,7 +24,7 @@ type ListModels struct {
 	loaded bool
 }
 
-func NewList(l *zap.Logger, state *state.State) *ListModels {
+func NewList(l *zap.Logger, st *state.State) *ListModels {
 	var (
 		ColumnIDWitdh      = 0
 		ColumnNameWidth    = 20
@@ -52,7 +52,7 @@ func NewList(l *zap.Logger, state *state.State) *ListModels {
 		table: t,
 		log:   l,
 		help:  help.NewList(),
-		state: state,
+		state: st,
 	}
 }
 

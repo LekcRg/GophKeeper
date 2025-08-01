@@ -40,7 +40,7 @@ func NewSelectType() tea.Model {
 	h := help.NewSelectAuth()
 
 	return &SelectTypeModel{
-		form: form.NewForm(form.FormOpts{
+		form: form.NewForm(form.Opts{
 			Buttons: buttons,
 			Up:      h.Keys.Up,
 			Down:    h.Keys.Down,

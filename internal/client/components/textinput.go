@@ -86,13 +86,13 @@ func digitsOnly(s string) []rune {
 	return []rune(re.ReplaceAllString(s, ""))
 }
 
-func (m *TextInput) setInputValue(value string) {
-	m.SetValue(string(value))
-	m.SetCursor(len(value))
+func (ti *TextInput) setInputValue(value string) {
+	ti.SetValue(value)
+	ti.SetCursor(len([]rune(value)))
 }
 
-func (m *TextInput) formatCardNumber() {
-	val := m.Value()
+func (ti *TextInput) formatCardNumber() {
+	val := ti.Value()
 	if val == "" {
 		return
 	}
@@ -101,7 +101,7 @@ func (m *TextInput) formatCardNumber() {
 	partLen := 4
 
 	if len(nums) <= partLen {
-		m.setInputValue(string(nums))
+		ti.setInputValue(string(nums))
 
 		return
 	}
@@ -124,12 +124,12 @@ func (m *TextInput) formatCardNumber() {
 	formatted := string(res)
 
 	if val != formatted {
-		m.setInputValue(formatted)
+		ti.setInputValue(formatted)
 	}
 }
 
-func (m *TextInput) formatCardExp() {
-	val := m.Value()
+func (ti *TextInput) formatCardExp() {
+	val := ti.Value()
 	if val == "" {
 		return
 	}
@@ -146,12 +146,12 @@ func (m *TextInput) formatCardExp() {
 	}
 
 	if formatted != val {
-		m.setInputValue(formatted)
+		ti.setInputValue(formatted)
 	}
 }
 
-func (m *TextInput) formatNums() {
-	val := m.Value()
+func (ti *TextInput) formatNums() {
+	val := ti.Value()
 	if val == "" {
 		return
 	}
@@ -159,7 +159,7 @@ func (m *TextInput) formatNums() {
 	formatted := string(digitsOnly(val))
 
 	if formatted != val {
-		m.setInputValue(formatted)
+		ti.setInputValue(formatted)
 	}
 }
 

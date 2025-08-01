@@ -55,7 +55,7 @@ func NewNote(acts *actions.Actions, log *zap.Logger) tea.Model {
 
 	return &NoteModel{
 		actions: acts,
-		form: form.NewForm(form.FormOpts{
+		form: form.NewForm(form.Opts{
 			Inputs:    inputs,
 			Buttons:   buttons,
 			Textareas: textareas,

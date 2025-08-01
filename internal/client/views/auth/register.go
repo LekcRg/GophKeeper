@@ -62,7 +62,7 @@ func NewRegister(acts *actions.Actions, log *zap.Logger) tea.Model {
 
 	return &RegisterModel{
 		actions: acts,
-		form: form.NewForm(form.FormOpts{
+		form: form.NewForm(form.Opts{
 			Inputs:  inputs,
 			Buttons: buttons,
 			Up:      h.Keys.Up,

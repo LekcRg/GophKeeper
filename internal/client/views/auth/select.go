@@ -55,7 +55,7 @@ func NewSelect(addr string) tea.Model {
 
 	return &SelectModel{
 		// form: form.NewForm(inputs, buttons, h.Keys.Up, h.Keys.Down),
-		form: form.NewForm(form.FormOpts{
+		form: form.NewForm(form.Opts{
 			Inputs:  inputs,
 			Buttons: buttons,
 			Up:      h.Keys.Up,

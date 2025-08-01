@@ -82,6 +82,8 @@ linters:
         - style
     gocyclo:
       min-complexity: 15
+    cyclop:
+      max-complexity: 15
     misspell:
       locale: US
     nestif:

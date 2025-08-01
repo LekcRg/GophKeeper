@@ -42,7 +42,8 @@ func (s *State) LoadVault(ctx context.Context) error {
 
 func (s *State) updateTable() {
 	s.Table = make([]table.Row, len(s.Vault))
-	for i, item := range s.Vault {
+	for i := range s.Vault {
+		item := &s.Vault[i]
 		id := strconv.Itoa(item.ID)
 		formattedDate := item.UpdatedAt.Format("2 January 2006")
 		s.Table[i] = table.Row{id, item.Name, item.Type, formattedDate}

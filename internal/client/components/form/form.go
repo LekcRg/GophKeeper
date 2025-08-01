@@ -22,7 +22,7 @@ type Form struct {
 	nav        nav.Navigation
 }
 
-type FormOpts struct {
+type Opts struct {
 	Inputs    []components.TextInput
 	Buttons   []components.Button
 	Textareas []components.Textarea
@@ -30,7 +30,7 @@ type FormOpts struct {
 	Down      key.Binding
 }
 
-func NewForm(opts FormOpts) *Form {
+func NewForm(opts Opts) *Form {
 	inputNames := make([]string, len(opts.Inputs))
 	validRules := make([]*validation.KeyRules, len(opts.Inputs))
 
@@ -70,8 +70,8 @@ func (m *Form) GetValues() map[string]string {
 	return res
 }
 
-func (m *Form) HandleError(err error, key string) {
-	m.Errors.HandleError(err, key)
+func (m *Form) HandleError(err error, apiKey string) {
+	m.Errors.HandleError(err, apiKey)
 }
 
 func (m *Form) Submit() tea.Msg {
