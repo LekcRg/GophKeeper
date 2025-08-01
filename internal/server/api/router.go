@@ -26,6 +26,8 @@ func New(h *handlers.Handlers, m *middlewares.Middlewares) *chi.Mux {
 		cr.Use(m.Authenticate)
 		cr.Get(routes.UserGetCryptoParams, h.UserHandlers.GetCryptoParams)
 		cr.Post(routes.VaultCreateItem, h.VaultHandlers.CreateItem)
+		cr.Post(routes.VaultCreateBinaryItem, h.VaultHandlers.CreateBinary)
+		cr.Post(routes.VaultBinaryConfirm, h.VaultHandlers.ConfirmBinaryUpload)
 		cr.Get(routes.VaultGetAll, h.VaultHandlers.GetAllItems)
 	})
 

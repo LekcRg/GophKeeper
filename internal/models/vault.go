@@ -53,3 +53,19 @@ type VaultItemDataCard struct {
 	Exp    string `json:"exp"`
 	CVV    string `json:"cvv"`
 }
+
+type VaultBinaryItemUploadReq struct {
+	Name          string `json:"name"`
+	EncryptedData string `json:"encrypted_data"`
+}
+
+type VaultBinaryItemUploadRes struct {
+	ItemID int    `json:"vault_id"`
+	URL    string `json:"url"`
+	Path   string `json:"path"`
+}
+
+type VaultConfirmBinaryUploadReq struct {
+	VaultID int    `json:"vault_id" db:"vault_id"`
+	Path    string `json:"path" db:"path"`
+}

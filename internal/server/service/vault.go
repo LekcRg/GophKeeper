@@ -5,20 +5,26 @@ import (
 	"encoding/base64"
 
 	"github.com/LekcRg/GophKeeper/internal/config"
+	"github.com/LekcRg/GophKeeper/internal/errs"
 	"github.com/LekcRg/GophKeeper/internal/models"
 	"github.com/LekcRg/GophKeeper/internal/server/repository"
 	"github.com/LekcRg/GophKeeper/internal/server/service/valid"
+	"github.com/LekcRg/GophKeeper/internal/server/storage"
 )
 
 type VaultService struct {
-	repo   repository.VaultRepo
-	config *config.Config
+	repo    repository.VaultRepo
+	config  *config.Config
+	storage *storage.Storage
 }
 
-func NewVaultService(vr repository.VaultRepo, cfg *config.Config) *VaultService {
+func NewVaultService(
+	vr repository.VaultRepo, cfg *config.Config, st *storage.Storage,
+) *VaultService {
 	return &VaultService{
-		repo:   vr,
-		config: cfg,
+		repo:    vr,
+		config:  cfg,
+		storage: st,
 	}
 }
 
@@ -52,4 +58,39 @@ func (vs *VaultService) GetAllItems(
 	}
 
 	return res, nil
+}
+
+func (vs *VaultService) CreateBinary(ctx context.Context, item models.VaultItem) (
+	models.VaultBinaryItemUploadRes, error,
+) {
+	createdItem, err := vs.CreateItem(ctx, item)
+	if err != nil {
+		return models.VaultBinaryItemUploadRes{}, err
+	}
+
+	url, path, err := vs.storage.GenUploadPresignedUrl(ctx, item.UserID)
+	if err != nil {
+		return models.VaultBinaryItemUploadRes{}, err
+	}
+
+	return models.VaultBinaryItemUploadRes{
+		ItemID: createdItem.ID,
+		URL:    url,
+		Path:   path,
+	}, nil
+}
+
+func (vs *VaultService) ConfirmBinaryUpload(
+	ctx context.Context, req models.VaultConfirmBinaryUploadReq,
+) error {
+	err := valid.ValidConfirmBinaryUpload(&req)
+	if err != nil {
+		return err
+	}
+
+	if !vs.storage.IsContainsFile(ctx, req.Path) {
+		return errs.ErrBinaryFileNotFound
+	}
+
+	return vs.repo.UpdateBinaryURL(ctx, req)
 }

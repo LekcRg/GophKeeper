@@ -31,3 +31,10 @@ func VaultCreateItem(item *models.VaultItem) error {
 		validation.Field(&item.EncryptedData, validation.Required),
 	)
 }
+
+func ValidConfirmBinaryUpload(req *models.VaultConfirmBinaryUploadReq) error {
+	return validation.ValidateStruct(req,
+		validation.Field(&req.VaultID, validation.Required),
+		validation.Field(&req.Path, validation.Required),
+	)
+}

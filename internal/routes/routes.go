@@ -2,10 +2,12 @@ package routes
 
 //nolint:gosec // routes
 const (
-	UserRegister        = "/user/create"
-	UserUpdateKey       = "/user/api-key"
-	UserChangePassword  = "/user/change-password"
-	UserGetCryptoParams = "/user/crypto-params"
-	VaultCreateItem     = "/vault/create"
-	VaultGetAll         = "/vault/all"
+	UserRegister          = "/user/create"
+	UserUpdateKey         = "/user/api-key"
+	UserChangePassword    = "/user/change-password"
+	UserGetCryptoParams   = "/user/crypto-params"
+	VaultCreateItem       = "/vault/create"
+	VaultCreateBinaryItem = "/vault/binary/create"
+	VaultBinaryConfirm    = "/vault/binary/confirm"
+	VaultGetAll           = "/vault/all"
 )

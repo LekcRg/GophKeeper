@@ -18,6 +18,8 @@ import (
 type VaultService interface {
 	CreateItem(ctx context.Context, item models.VaultItem) (models.VaultItem, error)
 	GetAllItems(ctx context.Context, id int) ([]models.VaultItem, error)
+	CreateBinary(ctx context.Context, req models.VaultItem) (models.VaultBinaryItemUploadRes, error)
+	ConfirmBinaryUpload(ctx context.Context, req models.VaultConfirmBinaryUploadReq) error
 }
 
 type VaultHandlers struct {
@@ -38,6 +40,21 @@ func NewVaultHandlers(
 	}
 }
 
+// CreateItem godoc
+// @Summary      Create vault item
+// @Description  Creates a new vault item (text, login, card, etc.) for the authenticated user.
+// @Tags         Vault
+// @Accept       json
+// @Produce      json
+// @Param        request body models.VaultCreateItemReq true "Vault item to create"
+// @Success      201 {object} models.VaultItem
+// @Failure      400 {object} models.VaultItem
+// @Failure      401 {object} models.ResponseError
+// @Failure      500 {object} models.ResponseError
+// @Router       /vault [post]
+// @Security     BearerAuth
+//
+// CreateItem handles creation of a new vault item (e.g., text, login, card) for the authenticated user.
 func (vh *VaultHandlers) CreateItem(w http.ResponseWriter, r *http.Request) {
 	var req models.VaultCreateItemReq
 
@@ -82,18 +99,136 @@ func (vh *VaultHandlers) CreateItem(w http.ResponseWriter, r *http.Request) {
 	vh.resp.JSON(w, http.StatusOK, vaultItem)
 }
 
+// GetAllItems godoc
+// @Summary      Get all vault items
+// @Description  Returns all vault items belonging to the authenticated user.
+// @Tags         Vault
+// @Produce      json
+// @Success      200 {array} models.VaultItem
+// @Failure      401 {object} models.ResponseError
+// @Failure      500 {object} models.ResponseError
+// @Router       /vault/all [get]
+// @Security     BearerAuth
+//
+// GetAllItems returns all vault items that belong to the authenticated user.
 func (vh *VaultHandlers) GetAllItems(w http.ResponseWriter, r *http.Request) {
 	id, err := middlewares.GetID(r.Context())
 	if err != nil {
-		vh.resp.Error(w, http.StatusBadRequest, "Unauthorized")
+		vh.resp.Error(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
 
 	res, err := vh.service.GetAllItems(r.Context(), id)
 	if err != nil {
+		vh.log.Error("Vault get all error", zap.Error(err))
 		vh.resp.InternalError(w)
+
 		return
 	}
 
 	vh.resp.JSON(w, http.StatusOK, res)
+}
+
+// CreateBinary godoc
+// @Summary      Create binary vault item
+// @Description  Creates a new vault item of type 'binary' and returns a pre-signed URL for direct file upload.
+// @Tags         Vault
+// @Accept       json
+// @Produce      json
+// @Param        request body models.VaultBinaryItemUploadReq true "Binary vault item metadata"
+// @Success      201 {object} models.VaultBinaryItemUploadRes
+// @Failure      400 {object} models.VaultBinaryItemUploadRes
+// @Failure      401 {object} models.ResponseError
+// @Failure      500 {object} models.ResponseError
+// @Router       /vault/binary [post]
+// @Security     BearerAuth
+//
+// Creates a new vault item of type 'binary' and returns a pre-signed URL for direct file upload.
+func (vh *VaultHandlers) CreateBinary(w http.ResponseWriter, r *http.Request) {
+	id, err := middlewares.GetID(r.Context())
+	if err != nil {
+		vh.resp.Error(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	var req models.VaultBinaryItemUploadReq
+
+	err = json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		vh.resp.Error(w, http.StatusBadRequest, "Bad request")
+		return
+	}
+
+	defer r.Body.Close()
+
+	enctyptedBytes, err := base64.StdEncoding.DecodeString(req.EncryptedData)
+	if err != nil {
+		vh.resp.Error(w, http.StatusBadRequest, "Invalid encrypted data")
+		return
+	}
+
+	res, err := vh.service.CreateBinary(r.Context(), models.VaultItem{
+		UserID:        id,
+		Name:          req.Name,
+		Type:          "binary",
+		EncryptedData: enctyptedBytes,
+	})
+	if err != nil {
+		if errors.As(err, &validation.Errors{}) {
+			vh.resp.JSON(w, http.StatusBadRequest, err)
+
+			return
+		}
+
+		vh.log.Error("Vault create binary error", zap.Error(err))
+		vh.resp.InternalError(w)
+
+		return
+	}
+
+	vh.resp.JSON(w, http.StatusOK, res)
+}
+
+// ConfirmBinaryUpload godoc
+// @Summary      Confirm binary file upload
+// @Description  Confirms the successful upload of a binary file and finalizes the vault item.
+// @Tags         Vault
+// @Accept       json
+// @Produce      json
+// @Param        request body models.VaultConfirmBinaryUploadReq true "Binary upload confirmation request"
+// @Success      200 {object} models.ResponseMessage
+// @Failure      400 {object} models.VaultConfirmBinaryUploadReq
+// @Failure      401 {object} models.ResponseError
+// @Failure      500 {object} models.ResponseError
+// @Router       /vault/binary/confirm [post]
+// @Security     BearerAuth
+//
+// Finalizes the binary vault item after successful file upload using the provided file path and item ID.
+func (vh *VaultHandlers) ConfirmBinaryUpload(w http.ResponseWriter, r *http.Request) {
+	var req models.VaultConfirmBinaryUploadReq
+
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		vh.resp.Error(w, http.StatusBadRequest, "Bad request")
+		return
+	}
+
+	defer r.Body.Close()
+
+	err = vh.service.ConfirmBinaryUpload(r.Context(), req)
+	if err != nil {
+		if errors.As(err, &validation.Errors{}) {
+			vh.resp.JSON(w, http.StatusBadRequest, err)
+
+			return
+		}
+
+		vh.log.Error("Vault confirm binary upload error",
+			zap.Error(err), zap.Any("req", req))
+		vh.resp.InternalError(w)
+
+		return
+	}
+
+	vh.resp.Message(w, http.StatusOK, "Success")
 }

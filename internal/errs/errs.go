@@ -43,4 +43,5 @@ var (
 // Vault errors.
 var (
 	ErrVaultNotCorrectType = errors.New("type is not valid")
+	ErrBinaryFileNotFound  = errors.New("binary file not found")
 )

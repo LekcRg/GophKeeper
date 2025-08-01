@@ -44,6 +44,19 @@ func (vr *VaultRepo) CreateItem(
 	return res, nil
 }
 
+func (vr *VaultRepo) UpdateBinaryURL(
+	ctx context.Context, req models.VaultConfirmBinaryUploadReq,
+) error {
+	query := `UPDATE vault SET binary_path = :path WHERE id = :vault_id;`
+
+	_, err := vr.db.NamedExecContext(ctx, query, req)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (vr *VaultRepo) GetAllItems(
 	ctx context.Context, userID int,
 ) ([]models.VaultItem, error) {

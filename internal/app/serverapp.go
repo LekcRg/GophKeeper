@@ -17,15 +17,17 @@ import (
 	"github.com/LekcRg/GophKeeper/internal/server/repository"
 	"github.com/LekcRg/GophKeeper/internal/server/repository/postgres"
 	"github.com/LekcRg/GophKeeper/internal/server/service"
+	"github.com/LekcRg/GophKeeper/internal/server/storage"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
 )
 
 type Server struct {
-	Log    *zap.Logger
-	Config *config.Config
-	http   *http.Server
-	db     *repository.Repository
+	Log     *zap.Logger
+	Config  *config.Config
+	http    *http.Server
+	db      *repository.Repository
+	storage *storage.Storage
 }
 
 var ErrLoggerIsNil = errors.New("logger is nil")
@@ -59,6 +61,11 @@ func NewServerApp(ctx context.Context) (*Server, error) {
 
 	server.db = db
 
+	server.storage, err = storage.New(cfg.Storage)
+	if err != nil {
+		return nil, err
+	}
+
 	server.http = server.createHTTP()
 
 	return server, nil
@@ -69,12 +76,14 @@ func (s *Server) printConfig() {
 
 	cfg := *s.Config
 	cfg.Postgres.Password = redacted
+	cfg.Storage.User = redacted
+	cfg.Storage.Password = redacted
 
 	s.Log.Info("Got config", zap.Any("config", cfg))
 }
 
 func (s *Server) createRouter() *chi.Mux {
-	svc := service.New(s.db, s.Config)
+	svc := service.New(s.db, s.Config, s.storage)
 	resp := response.NewResponder(s.Log)
 	handl := handlers.New(s.Config, svc, s.Log, resp)
 	middl := middlewares.New(s.Config, s.Log, resp, s.db.UserRepo)

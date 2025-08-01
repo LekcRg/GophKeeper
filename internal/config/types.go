@@ -10,12 +10,21 @@ type Postgres struct {
 	MaxConns string `yaml:"max_conns" env:"MAX_CONNS" long:"pg-max-conns" description:"Postgres max poll connection"`
 }
 
+type Storage struct {
+	Endpoint string `yaml:"endpoint" env:"STORAGE_ENDPOINT" long:"storage-endpoint" description:"Storage endpoint"`
+	User     string `yaml:"user" env:"MINIO_ROOT_USER" long:"storage-user" description:"Storage user"`
+	Password string `yaml:"password" env:"MINIO_ROOT_PASSWORD" long:"storage-password" description:"Storage password"`
+	Bucket   string `yaml:"bucket" env:"STORAGE_BUCKET" long:"storage-bucket" description:"Storage bucket"`
+	Secure   bool   `yaml:"secure" env:"STORAGE_SECURE" long:"storage-secure" description:"Storage secure"`
+}
+
 type Auth struct {
 	MaxBytesKey int `yaml:"max_bytes_key" env:"MAX_BYTES_KEY" long:"max-bytes-key" description:"Max bytes of API key"`
 }
 
 type Config struct {
 	Postgres Postgres `yaml:"postgres"`
+	Storage  Storage  `yaml:"storage"`
 	Config   string   `env:"CONFIG" short:"c" long:"config" description:"Path to yaml config"`
 	Addr     string   `yaml:"address" env:"ADDRESS" short:"a" long:"addresss" description:"Address for HTTP server"`
 	Auth     Auth     `yaml:"auth"`

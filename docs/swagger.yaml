@@ -22,6 +22,11 @@ definitions:
       error:
         type: string
     type: object
+  models.ResponseMessage:
+    properties:
+      message:
+        type: string
+    type: object
   models.UserChangePasswordReq:
     properties:
       current-password:
@@ -48,6 +53,55 @@ definitions:
         type: string
       salt:
         type: string
+    type: object
+  models.VaultBinaryItemUploadReq:
+    properties:
+      encrypted_data:
+        type: string
+      name:
+        type: string
+    type: object
+  models.VaultBinaryItemUploadRes:
+    properties:
+      path:
+        type: string
+      url:
+        type: string
+      vault_id:
+        type: integer
+    type: object
+  models.VaultConfirmBinaryUploadReq:
+    properties:
+      path:
+        type: string
+      vault_id:
+        type: integer
+    type: object
+  models.VaultCreateItemReq:
+    properties:
+      encrypted_data:
+        type: string
+      name:
+        type: string
+      type:
+        type: string
+    type: object
+  models.VaultItem:
+    properties:
+      created_at:
+        type: string
+      encrypted_data:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      type:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
     type: object
 info:
   contact: {}
@@ -179,6 +233,142 @@ paths:
       summary: Get crypto params
       tags:
       - Users
+  /vault:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new vault item (text, login, card, etc.) for the authenticated
+        user.
+      parameters:
+      - description: Vault item to create
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.VaultCreateItemReq'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.VaultItem'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.VaultItem'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+      security:
+      - BearerAuth: []
+      summary: Create vault item
+      tags:
+      - Vault
+  /vault/all:
+    get:
+      description: Returns all vault items belonging to the authenticated user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.VaultItem'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+      security:
+      - BearerAuth: []
+      summary: Get all vault items
+      tags:
+      - Vault
+  /vault/binary:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new vault item of type 'binary' and returns a pre-signed
+        URL for direct file upload.
+      parameters:
+      - description: Binary vault item metadata
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.VaultBinaryItemUploadReq'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.VaultBinaryItemUploadRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.VaultBinaryItemUploadRes'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+      security:
+      - BearerAuth: []
+      summary: Create binary vault item
+      tags:
+      - Vault
+  /vault/binary/confirm:
+    post:
+      consumes:
+      - application/json
+      description: Confirms the successful upload of a binary file and finalizes the
+        vault item.
+      parameters:
+      - description: Binary upload confirmation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.VaultConfirmBinaryUploadReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ResponseMessage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.VaultConfirmBinaryUploadReq'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+      security:
+      - BearerAuth: []
+      summary: Confirm binary file upload
+      tags:
+      - Vault
 securityDefinitions:
   BearerAuth:
     in: header

@@ -33,6 +33,12 @@ func (r *Responder) JSON(w http.ResponseWriter, status int, data any) {
 	}
 }
 
+func (r *Responder) Message(w http.ResponseWriter, status int, message string) {
+	r.JSON(w, status, models.ResponseMessage{
+		Message: message,
+	})
+}
+
 func (r *Responder) Error(w http.ResponseWriter, status int, message string) {
 	r.JSON(w, status, models.ResponseError{
 		Error: message,
