@@ -46,6 +46,7 @@ func New(logger *zap.Logger, cfg *config.ClientConfig) *Views {
 		router.SelectVaultType:     create.NewSelectType(),
 		router.CreateVaultPassword: create.NewPassword(acts, logger),
 		router.CreateVaultNote:     create.NewNote(acts, logger),
+		router.CreateVaultCard:     create.NewCard(acts, logger),
 	}
 
 	return &Views{

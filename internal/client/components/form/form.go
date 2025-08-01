@@ -161,7 +161,6 @@ func (m *Form) View() string {
 	for i := range m.nav.Textareas {
 		ta := &m.nav.Textareas[i]
 		b.WriteString(ta.View())
-		b.WriteRune('\n')
 		b.WriteString(styles.ErrorStyle.Render(
 			m.Errors.GetFieldError(ta.Name),
 		))
