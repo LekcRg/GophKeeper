@@ -39,3 +39,9 @@ type CreateVaultSuccess struct {
 }
 
 type UpdateAndSwitchToTable struct{}
+
+type OpenFilePicker struct{}
+
+type FilepickerSelected string
+
+type Back struct{}

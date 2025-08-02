@@ -23,12 +23,11 @@ func NewDetail(st *state.State, log *zap.Logger) tea.Model {
 func (m *DetailModel) Init() tea.Cmd {
 	item, err := m.state.GetActiveItem()
 	if err != nil {
-		m.log.Info("detail get item error", zap.Error(err))
+		m.log.Error("detail get item error", zap.Error(err))
 		m.view = nil
 
 		return nil
 	}
-	m.log.Info("init", zap.Any("item", item.DecryptedData))
 
 	switch typedItem := item.DecryptedData.(type) {
 	case models.VaultItemDataPassword:
@@ -40,8 +39,8 @@ func (m *DetailModel) Init() tea.Cmd {
 	case models.VaultItemDataCard:
 		m.view = NewCard(item.Name, typedItem)
 		m.log.Info("3")
-		// case models.VaultBi:
-		// 	return nil
+	case models.VaultItemDataBinary:
+		m.view = NewBinary(item.Name, typedItem)
 	}
 
 	return func() tea.Msg { return "" }

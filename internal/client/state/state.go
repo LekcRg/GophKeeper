@@ -96,10 +96,10 @@ func (s *State) GetActiveItem() (models.VaultItem, error) {
 				var tmp models.VaultItemDataCard
 				err = json.Unmarshal(decryptedJSON, &tmp)
 				newItem.DecryptedData = tmp
-			// case "binary":
-			// 	var tmp models.VaultItemDataCard
-			// 	err = json.Unmarshal(decryptedJSON, &tmp)
-			// 	newItem.DecryptedData = tmp
+			case "binary":
+				var tmp models.VaultItemDataBinary
+				err = json.Unmarshal(decryptedJSON, &tmp)
+				newItem.DecryptedData = tmp
 			default:
 				return models.VaultItem{}, fmt.Errorf("unknown item type %q", item.Type)
 			}

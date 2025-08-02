@@ -3,6 +3,7 @@ package req
 import (
 	"context"
 
+	"github.com/LekcRg/GophKeeper/internal/errs"
 	"github.com/LekcRg/GophKeeper/internal/models"
 	"github.com/LekcRg/GophKeeper/internal/routes"
 )
@@ -31,6 +32,77 @@ func (r *Request) CreateVaultItem(
 	}
 
 	return resBody, nil
+}
+
+func (r *Request) CreateVaultBinaryItem(
+	ctx context.Context, item models.VaultBinaryItemUploadReq,
+) (models.VaultBinaryItemUploadRes, error) {
+	var (
+		resBody models.VaultBinaryItemUploadRes
+		resErrs map[string]string
+	)
+
+	res, err := r.client.R().
+		SetHeader("Authorization", "Bearer "+r.config.Key).
+		SetContext(ctx).
+		SetBody(item).
+		SetResult(&resBody).
+		SetError(&resErrs).
+		Post(r.config.Address + routes.VaultCreateBinaryItem)
+	if err != nil {
+		return models.VaultBinaryItemUploadRes{}, err
+	}
+
+	if res.StatusCode() > minErrStatus {
+		return models.VaultBinaryItemUploadRes{}, &ResError{Errors: resErrs}
+	}
+
+	return resBody, nil
+}
+
+func (r *Request) VaultUploadBinaryFile(ctx context.Context, url string, encFile []byte) error {
+	resp, err := r.client.R().
+		SetContext(ctx).
+		SetBody(encFile).
+		SetHeader("Content-Type", "application/octet-stream").
+		Put(url)
+
+	if err != nil {
+		return err
+	}
+
+	if !resp.IsSuccess() {
+		return errs.ErrBinaryFileUpload
+	}
+
+	return nil
+}
+
+func (r *Request) VaultConfirmCreateBinary(ctx context.Context, path string, id int) error {
+	var (
+		resErrs map[string]string
+	)
+
+	body := models.VaultConfirmBinaryUploadReq{
+		VaultID: id,
+		Path:    path,
+	}
+
+	res, err := r.client.R().
+		SetContext(ctx).
+		SetHeader("Authorization", "Bearer "+r.config.Key).
+		SetBody(body).
+		SetError(&resErrs).
+		Post(r.config.Address + routes.VaultBinaryConfirm)
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode() > minErrStatus {
+		return &ResError{Errors: resErrs}
+	}
+
+	return nil
 }
 
 func (r *Request) VaultGetAll(ctx context.Context) ([]models.VaultItem, error) {

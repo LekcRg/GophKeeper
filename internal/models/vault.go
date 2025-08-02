@@ -61,12 +61,18 @@ type VaultBinaryItemUploadReq struct {
 }
 
 type VaultBinaryItemUploadRes struct {
-	ItemID int    `json:"vault_id"`
-	URL    string `json:"url"`
-	Path   string `json:"path"`
+	ItemID int       `json:"vault_id"`
+	URL    string    `json:"url"`
+	Path   string    `json:"path"`
+	Item   VaultItem `json:"item"`
 }
 
 type VaultConfirmBinaryUploadReq struct {
 	VaultID int    `json:"vault_id" db:"vault_id"`
 	Path    string `json:"path" db:"path"`
+}
+
+type VaultItemDataBinary struct {
+	Name string `json:"name"`
+	Size int64  `json:"size"`
 }

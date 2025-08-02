@@ -48,7 +48,9 @@ func New(logger *zap.Logger, cfg *config.ClientConfig) *Views {
 		router.CreateVaultPassword: create.NewPassword(acts, logger),
 		router.CreateVaultNote:     create.NewNote(acts, logger),
 		router.CreateVaultCard:     create.NewCard(acts, logger),
+		router.CreateVaultBinary:   create.NewBinary(acts, logger),
 		router.Detail:              detail.NewDetail(state, logger),
+		router.FilePicker:          create.NewFilePicker(),
 	}
 
 	return &Views{
@@ -105,9 +107,19 @@ func (m *Views) handleBack() tea.Msg {
 		return m.router.SwitchTo(router.ListView)
 	case m.router.IsCreateView():
 		return m.router.SwitchTo(router.SelectVaultType)
+	case m.router.CurrentViewRoute() == router.FilePicker:
+		return m.router.SwitchTo(router.CreateVaultBinary)
 	}
 
 	return nil
+}
+
+func (m *Views) handleFileSelected(msg msgs.FilepickerSelected) tea.Msg {
+	m.router.SwitchTo(router.CreateVaultBinary)
+
+	return func() tea.Msg {
+		return msg
+	}
 }
 
 func (m *Views) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -120,6 +132,8 @@ func (m *Views) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if key.Matches(typeMsg, help.Back) {
 			return m, m.handleBack
 		}
+	case msgs.Back:
+		return m, m.handleBack
 	case msgs.SelectAuthMsg:
 		return m, m.handleSelectAuth(typeMsg)
 	case msgs.CredentialsBytesMsg:
@@ -143,6 +157,10 @@ func (m *Views) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case msgs.SelectVaultItem:
 		m.state.SetActiveID(int(typeMsg))
 		return m, m.router.SwitchTo(router.Detail)
+	case msgs.FilepickerSelected:
+		m.handleFileSelected(typeMsg)
+	case msgs.OpenFilePicker:
+		return m, m.router.SwitchTo(router.FilePicker)
 	}
 
 	currentView := m.router.Current()

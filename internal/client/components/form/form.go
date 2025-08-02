@@ -59,6 +59,14 @@ func (m *Form) Init() tea.Cmd {
 	return tea.Batch(textinput.Blink, textarea.Blink)
 }
 
+func (m *Form) ChangeButtonAdditionalText(i int, text string) {
+	if len(m.nav.Buttons) < i+1 {
+		return
+	}
+
+	m.nav.Buttons[i].AdditionalText = text
+}
+
 func (m *Form) GetValues() map[string]string {
 	res := make(map[string]string, len(m.nav.Inputs))
 

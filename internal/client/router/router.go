@@ -25,6 +25,7 @@ const (
 	CreateVaultNote     CurrentView = "note"
 	CreateVaultCard     CurrentView = "card"
 	CreateVaultBinary   CurrentView = "binary"
+	FilePicker          CurrentView = "file-picker"
 	Detail              CurrentView = "detail"
 )
 

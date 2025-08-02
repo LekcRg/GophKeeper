@@ -74,6 +74,7 @@ func (vs *VaultService) CreateBinary(ctx context.Context, item models.VaultItem)
 	}
 
 	return models.VaultBinaryItemUploadRes{
+		Item:   createdItem,
 		ItemID: createdItem.ID,
 		URL:    url,
 		Path:   path,
