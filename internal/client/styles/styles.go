@@ -21,9 +21,9 @@ var (
 	Border         = lipgloss.NewStyle().
 			BorderStyle(lipgloss.NormalBorder()).
 			BorderForeground(Gray)
+	FieldLabel = lipgloss.NewStyle().Bold(true).Foreground(FocusColor)
 )
 
-//nolint:mnd // styles
 var (
 	SuccessTitle = lipgloss.NewStyle().
 			Foreground(Green).

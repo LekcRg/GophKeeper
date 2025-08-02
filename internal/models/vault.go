@@ -22,12 +22,9 @@ type VaultItem struct {
 	Type                string    `db:"type" json:"type"`
 	EncryptedDataString string    `db:"-" json:"encrypted_data"`
 	EncryptedData       []byte    `db:"encrypted_data" json:"-"`
+	DecryptedData       any       `db:"-" json:"-"`
 	ID                  int       `db:"id" json:"id"`
 	UserID              int       `db:"user_id" json:"user_id"`
-}
-
-type VaultNote struct {
-	Text string `json:"text"`
 }
 
 type VaultItemState struct {
@@ -40,6 +37,10 @@ type VaultItemState struct {
 	DecryptedNote     VaultNote             `json:"-"`
 	EncryptedData     []byte                `json:"-"`
 	ID                int                   `json:"id"`
+}
+
+type VaultNote struct {
+	Text string `json:"text"`
 }
 
 type VaultItemDataPassword struct {

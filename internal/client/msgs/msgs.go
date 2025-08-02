@@ -22,7 +22,7 @@ type CredentialsBytesMsg struct {
 
 type UpdateKeySuccessMsg string
 
-type CryptoPassValid string
+type CryptoPassValid []byte
 
 type ListLoaded struct{}
 

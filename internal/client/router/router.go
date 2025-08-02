@@ -25,6 +25,7 @@ const (
 	CreateVaultNote     CurrentView = "note"
 	CreateVaultCard     CurrentView = "card"
 	CreateVaultBinary   CurrentView = "binary"
+	Detail              CurrentView = "detail"
 )
 
 func NewViewRouter(current CurrentView, v Views) *ViewRouter {
@@ -54,6 +55,11 @@ func (r *ViewRouter) IsCreateView() bool {
 		r.currentView == CreateVaultNote ||
 		r.currentView == CreateVaultCard ||
 		r.currentView == CreateVaultBinary
+}
+
+func (r *ViewRouter) IsListBack() bool {
+	return r.currentView == SelectVaultType ||
+		r.currentView == Detail
 }
 
 func (r *ViewRouter) SwitchTo(view CurrentView) tea.Cmd {

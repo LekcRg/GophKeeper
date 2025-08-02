@@ -62,7 +62,7 @@ func (vr *VaultRepo) GetAllItems(
 ) ([]models.VaultItem, error) {
 	var res []models.VaultItem
 
-	query := `SElECT * FROM vault WHERE user_id = $1`
+	query := `SElECT id, name, type, encrypted_data, created_at, updated_at FROM vault WHERE user_id = $1`
 
 	err := vr.db.SelectContext(ctx, &res, query, userID)
 	if err != nil {

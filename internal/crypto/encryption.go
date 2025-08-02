@@ -66,9 +66,7 @@ func Encrypt(content, key []byte) ([]byte, error) {
 	return encrypted, nil
 }
 
-func Decrypt(password string, enc, salt []byte) ([]byte, error) {
-	key := DeriveEncryptionKey(password, salt)
-
+func Decrypt(enc, key []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
@@ -94,8 +92,8 @@ func Decrypt(password string, enc, salt []byte) ([]byte, error) {
 	return plaintext, nil
 }
 
-func ValidEncryptionPassword(password string, tag, salt []byte) error {
-	tag, err := Decrypt(password, tag, salt)
+func ValidEncryptionPassword(tag, key []byte) error {
+	tag, err := Decrypt(tag, key)
 	if err != nil {
 		return errs.ErrInvalidCryptoPasssword
 	}

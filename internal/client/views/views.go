@@ -9,6 +9,7 @@ import (
 	"github.com/LekcRg/GophKeeper/internal/client/state"
 	"github.com/LekcRg/GophKeeper/internal/client/views/auth"
 	"github.com/LekcRg/GophKeeper/internal/client/views/create"
+	"github.com/LekcRg/GophKeeper/internal/client/views/detail"
 	"github.com/LekcRg/GophKeeper/internal/config"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
@@ -47,6 +48,7 @@ func New(logger *zap.Logger, cfg *config.ClientConfig) *Views {
 		router.CreateVaultPassword: create.NewPassword(acts, logger),
 		router.CreateVaultNote:     create.NewNote(acts, logger),
 		router.CreateVaultCard:     create.NewCard(acts, logger),
+		router.Detail:              detail.NewDetail(state, logger),
 	}
 
 	return &Views{
@@ -99,7 +101,7 @@ func (m *Views) handleBack() tea.Msg {
 	switch {
 	case m.router.IsAuthenticationView():
 		return m.router.SwitchTo(router.SelectAuthView)
-	case m.router.CurrentViewRoute() == router.SelectVaultType:
+	case m.router.IsListBack():
 		return m.router.SwitchTo(router.ListView)
 	case m.router.IsCreateView():
 		return m.router.SwitchTo(router.SelectVaultType)
@@ -125,7 +127,7 @@ func (m *Views) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case msgs.UpdateKeySuccessMsg:
 		return m, m.router.SwitchTo(router.SelectAuthView)
 	case msgs.CryptoPassValid:
-		m.state.SaveCryptoPassword(string(typeMsg))
+		m.state.SaveCryptoPassword(typeMsg)
 		return m, m.router.SwitchTo(router.ListView)
 	case msgs.ToCreateVaultItem:
 		return m, m.router.SwitchTo(router.SelectVaultType)
@@ -138,6 +140,9 @@ func (m *Views) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.router.SwitchTo(router.ListView),
 			func() tea.Msg { return msgs.ListLoaded{} },
 		)
+	case msgs.SelectVaultItem:
+		m.state.SetActiveID(int(typeMsg))
+		return m, m.router.SwitchTo(router.Detail)
 	}
 
 	currentView := m.router.Current()

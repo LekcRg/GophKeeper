@@ -85,7 +85,9 @@ func (a *Actions) UpdateKey(ctx context.Context, request models.UserLogin) (mode
 
 func (a *Actions) CheckCryptoPassword(form msgs.FormSubmitMsg, passwordInput string) tea.Cmd {
 	return func() tea.Msg {
-		err := crypto.ValidEncryptionPassword(form.Values[passwordInput], a.config.EnctyptedTag, a.config.Salt)
+		key := crypto.DeriveEncryptionKey(form.Values[passwordInput], a.config.Salt)
+
+		err := crypto.ValidEncryptionPassword(a.config.EnctyptedTag, key)
 		if err != nil {
 			if errors.Is(err, errs.ErrInvalidCryptoPasssword) {
 				return &req.ResError{
@@ -98,6 +100,6 @@ func (a *Actions) CheckCryptoPassword(form msgs.FormSubmitMsg, passwordInput str
 			return msgs.ErrorMsg(err)
 		}
 
-		return msgs.CryptoPassValid(passwordInput)
+		return msgs.CryptoPassValid(key)
 	}
 }
