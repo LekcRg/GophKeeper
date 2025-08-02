@@ -20,6 +20,7 @@ type VaultItem struct {
 	UpdatedAt           time.Time `db:"updated_at" json:"updated_at"`
 	Name                string    `db:"name" json:"name"`
 	Type                string    `db:"type" json:"type"`
+	BinaryPath          string    `db:"binary_path" json:"-"`
 	EncryptedDataString string    `db:"-" json:"encrypted_data"`
 	EncryptedData       []byte    `db:"encrypted_data" json:"-"`
 	DecryptedData       any       `db:"-" json:"-"`
@@ -73,6 +74,10 @@ type VaultConfirmBinaryUploadReq struct {
 }
 
 type VaultItemDataBinary struct {
-	Name string `json:"name"`
+	Path string `json:"name"`
 	Size int64  `json:"size"`
+}
+
+type GetBinaryFileURLRes struct {
+	URL string `json:"url"`
 }

@@ -47,4 +47,6 @@ var (
 	ErrNotFourndActiveItem = errors.New("not found active item")
 	ErrFileEmpty           = errors.New("file must not empty")
 	ErrBinaryFileUpload    = errors.New("binary file upload err")
+	ErrInvalidUserBinary   = errors.New("invalid user id for binary file")
+	ErrDownloadBinary      = errors.New("download binary error")
 )

@@ -2,6 +2,8 @@ package req
 
 import (
 	"context"
+	"io"
+	"strconv"
 
 	"github.com/LekcRg/GophKeeper/internal/errs"
 	"github.com/LekcRg/GophKeeper/internal/models"
@@ -105,6 +107,29 @@ func (r *Request) VaultConfirmCreateBinary(ctx context.Context, path string, id 
 	return nil
 }
 
+func (r *Request) VaultGetDowloadBidnaryURL(ctx context.Context, id int) (string, error) {
+	var (
+		resBody models.GetBinaryFileURLRes
+		resErrs map[string]string
+	)
+
+	res, err := r.client.R().
+		SetHeader("Authorization", "Bearer "+r.config.Key).
+		SetContext(ctx).
+		SetResult(&resBody).
+		SetError(&resErrs).
+		Get(r.config.Address + routes.VaultGetBinaryFile + strconv.Itoa(id))
+	if err != nil {
+		return "", err
+	}
+
+	if res.StatusCode() > minErrStatus {
+		return "", &ResError{Errors: resErrs}
+	}
+
+	return resBody.URL, nil
+}
+
 func (r *Request) VaultGetAll(ctx context.Context) ([]models.VaultItem, error) {
 	var (
 		resBody []models.VaultItem
@@ -126,4 +151,22 @@ func (r *Request) VaultGetAll(ctx context.Context) ([]models.VaultItem, error) {
 	}
 
 	return resBody, nil
+}
+
+func (r *Request) DownloadBinary(url string) ([]byte, error) {
+	resp, err := r.client.R().Get(url)
+	if err != nil {
+		return nil, err
+	}
+
+	if !resp.IsSuccess() {
+		return nil, errs.ErrDownloadBinary
+	}
+
+	file, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return file, nil
 }

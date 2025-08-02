@@ -29,6 +29,7 @@ func New(h *handlers.Handlers, m *middlewares.Middlewares) *chi.Mux {
 		cr.Post(routes.VaultCreateBinaryItem, h.VaultHandlers.CreateBinary)
 		cr.Post(routes.VaultBinaryConfirm, h.VaultHandlers.ConfirmBinaryUpload)
 		cr.Get(routes.VaultGetAll, h.VaultHandlers.GetAllItems)
+		cr.Get(routes.VaultGetBinaryFile+"{id}", h.VaultHandlers.GetBinaryFileURL)
 	})
 
 	r.Get("/swagger/*", httpSwagger.Handler(

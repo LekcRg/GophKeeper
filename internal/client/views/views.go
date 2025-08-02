@@ -49,7 +49,7 @@ func New(logger *zap.Logger, cfg *config.ClientConfig) *Views {
 		router.CreateVaultNote:     create.NewNote(acts, logger),
 		router.CreateVaultCard:     create.NewCard(acts, logger),
 		router.CreateVaultBinary:   create.NewBinary(acts, logger),
-		router.Detail:              detail.NewDetail(state, logger),
+		router.Detail:              detail.NewDetail(state, logger, acts),
 		router.FilePicker:          create.NewFilePicker(),
 	}
 

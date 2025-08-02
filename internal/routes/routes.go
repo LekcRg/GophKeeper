@@ -10,4 +10,5 @@ const (
 	VaultCreateBinaryItem = "/vault/binary/create"
 	VaultBinaryConfirm    = "/vault/binary/confirm"
 	VaultGetAll           = "/vault/all"
+	VaultGetBinaryFile    = "/vault/binary/"
 )

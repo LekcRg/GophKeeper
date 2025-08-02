@@ -52,6 +52,23 @@ func (s *Storage) GenUploadPresignedUrl(
 	return presigned.String(), filepath, nil
 }
 
+func (s *Storage) GenPresignedGetUrl(
+	ctx context.Context, filePath string,
+) (string, error) {
+	presigned, err := s.client.PresignedGetObject(
+		ctx,
+		s.config.Bucket,
+		filePath,
+		time.Hour,
+		nil,
+	)
+	if err != nil {
+		return "", err
+	}
+
+	return presigned.String(), nil
+}
+
 func (s *Storage) IsContainsFile(ctx context.Context, path string) bool {
 	_, err := s.client.StatObject(ctx, s.config.Bucket, path, minio.StatObjectOptions{})
 	if err != nil {

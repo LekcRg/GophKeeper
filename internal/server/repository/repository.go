@@ -23,6 +23,7 @@ type VaultRepo interface {
 	GetAllItems(ctx context.Context, userID int) ([]models.VaultItem, error)
 	UpdateBinaryURL(ctx context.Context, req models.VaultConfirmBinaryUploadReq) error
 	CreateItem(ctx context.Context, item models.VaultItem) (models.VaultItem, error)
+	GetItem(ctx context.Context, id int) (models.VaultItem, error)
 }
 
 type Repository struct {

@@ -95,3 +95,23 @@ func (vs *VaultService) ConfirmBinaryUpload(
 
 	return vs.repo.UpdateBinaryURL(ctx, req)
 }
+
+func (vs *VaultService) GetBinaryFileURL(
+	ctx context.Context, userID, vaultID int,
+) (string, error) {
+	item, err := vs.repo.GetItem(ctx, vaultID)
+	if err != nil {
+		return "", err
+	}
+
+	if item.UserID != userID {
+		return "", errs.ErrInvalidUserBinary
+	}
+
+	url, err := vs.storage.GenPresignedGetUrl(ctx, item.BinaryPath)
+	if err != nil {
+		return "", err
+	}
+
+	return url, nil
+}

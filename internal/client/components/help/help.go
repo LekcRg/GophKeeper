@@ -55,4 +55,8 @@ var (
 		key.WithKeys("c", "C"),
 		key.WithHelp("c", "create"),
 	)
+	Download = key.NewBinding(
+		key.WithKeys("d", "D"),
+		key.WithHelp("d", "download"),
+	)
 )

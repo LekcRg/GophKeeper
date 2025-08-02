@@ -44,6 +44,19 @@ func (vr *VaultRepo) CreateItem(
 	return res, nil
 }
 
+func (vr *VaultRepo) GetItem(ctx context.Context, id int) (models.VaultItem, error) {
+	query := `SElECT * FROM vault WHERE id = $1`
+
+	var res models.VaultItem
+
+	err := vr.db.GetContext(ctx, &res, query, id)
+	if err != nil {
+		return res, err
+	}
+
+	return res, nil
+}
+
 func (vr *VaultRepo) UpdateBinaryURL(
 	ctx context.Context, req models.VaultConfirmBinaryUploadReq,
 ) error {

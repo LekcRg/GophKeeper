@@ -1,6 +1,7 @@
 package detail
 
 import (
+	"github.com/LekcRg/GophKeeper/internal/client/actions"
 	"github.com/LekcRg/GophKeeper/internal/client/state"
 	"github.com/LekcRg/GophKeeper/internal/models"
 	tea "github.com/charmbracelet/bubbletea"
@@ -8,15 +9,17 @@ import (
 )
 
 type DetailModel struct {
-	state *state.State
-	view  tea.Model
-	log   *zap.Logger
+	state   *state.State
+	view    tea.Model
+	log     *zap.Logger
+	actions *actions.Actions
 }
 
-func NewDetail(st *state.State, log *zap.Logger) tea.Model {
+func NewDetail(st *state.State, log *zap.Logger, acts *actions.Actions) tea.Model {
 	return &DetailModel{
-		state: st,
-		log:   log,
+		state:   st,
+		log:     log,
+		actions: acts,
 	}
 }
 
@@ -31,23 +34,23 @@ func (m *DetailModel) Init() tea.Cmd {
 
 	switch typedItem := item.DecryptedData.(type) {
 	case models.VaultItemDataPassword:
-		m.view = NewPassword(item.Name, typedItem)
-		m.log.Info("1")
+		m.view = NewPassword(item.Name, typedItem, m.actions)
 	case models.VaultNote:
-		m.view = NewNote(item.Name, typedItem)
-		m.log.Info("2")
+		m.view = NewNote(item.Name, typedItem, m.actions)
 	case models.VaultItemDataCard:
-		m.view = NewCard(item.Name, typedItem)
-		m.log.Info("3")
+		m.view = NewCard(item.Name, typedItem, m.actions)
 	case models.VaultItemDataBinary:
-		m.view = NewBinary(item.Name, typedItem)
+		m.view = NewBinary(item.Name, typedItem, m.actions, item.ID)
 	}
 
 	return func() tea.Msg { return "" }
 }
 
 func (m *DetailModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	return m, nil
+	var cmd tea.Cmd
+	m.view, cmd = m.view.Update(msg)
+
+	return m, cmd
 }
 
 func (m *DetailModel) View() string {

@@ -6,11 +6,14 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/LekcRg/GophKeeper/internal/config"
+	"github.com/LekcRg/GophKeeper/internal/errs"
 	"github.com/LekcRg/GophKeeper/internal/models"
 	"github.com/LekcRg/GophKeeper/internal/server/api/middlewares"
 	"github.com/LekcRg/GophKeeper/internal/server/api/response"
+	"github.com/go-chi/chi/v5"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"go.uber.org/zap"
 )
@@ -20,6 +23,7 @@ type VaultService interface {
 	GetAllItems(ctx context.Context, id int) ([]models.VaultItem, error)
 	CreateBinary(ctx context.Context, req models.VaultItem) (models.VaultBinaryItemUploadRes, error)
 	ConfirmBinaryUpload(ctx context.Context, req models.VaultConfirmBinaryUploadReq) error
+	GetBinaryFileURL(ctx context.Context, userID, vaultID int) (string, error)
 }
 
 type VaultHandlers struct {
@@ -231,4 +235,48 @@ func (vh *VaultHandlers) ConfirmBinaryUpload(w http.ResponseWriter, r *http.Requ
 	}
 
 	vh.resp.Message(w, http.StatusOK, "Success")
+}
+
+// ConfirmBinaryUpload godoc
+// @Summary      Get binary file URL
+// @Description  Get binary file URL
+// @Tags         Vault
+// @Produce      json
+// @Param        id   path      string  true  "Binary ID"
+// @Success      200 {object} models.ResponseMessage
+// @Failure      400 {object} models.ResponseError
+// @Failure      401 {object} models.ResponseError
+// @Failure      500 {object} models.ResponseError
+// @Router       /vault/binary/{id} [get]
+// @Security     BearerAuth
+//
+// Get binary file URL.
+func (vh *VaultHandlers) GetBinaryFileURL(w http.ResponseWriter, r *http.Request) {
+	userID, err := middlewares.GetID(r.Context())
+	if err != nil {
+		vh.resp.Error(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	vaultIDStr := chi.URLParam(r, "id")
+
+	vaultID, err := strconv.Atoi(vaultIDStr)
+	if err != nil {
+		vh.resp.Error(w, http.StatusBadRequest, "Ivalid ID")
+	}
+
+	// vh.log.Info("got resp", zap.Int("user id", userID), zap.Int("vault id", vaultID))
+	url, err := vh.service.GetBinaryFileURL(r.Context(), userID, vaultID)
+	if err != nil {
+		if errors.Is(err, errs.ErrInvalidUserBinary) {
+			vh.resp.Error(w, http.StatusBadRequest, "Bad request")
+		}
+
+		vh.log.Error("GetBinaryFileURL service error", zap.Error(err))
+		vh.resp.InternalError(w)
+
+		return
+	}
+
+	vh.resp.JSON(w, http.StatusOK, models.GetBinaryFileURLRes{URL: url})
 }

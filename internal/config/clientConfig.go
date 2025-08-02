@@ -17,6 +17,7 @@ type ClientConfig struct {
 	SaltString         string `yaml:"salt"`
 	EnctyptedTag       []byte `yaml:"-"`
 	Salt               []byte `yaml:"-"`
+	Folder             string
 }
 
 const (
@@ -94,6 +95,8 @@ func GetClientConfig() (*ClientConfig, error) {
 			return cfg, err
 		}
 	}
+
+	cfg.Folder = path
 
 	return cfg, nil
 }
