@@ -68,7 +68,6 @@ func (r *Request) VaultUploadBinaryFile(ctx context.Context, url string, encFile
 		SetBody(encFile).
 		SetHeader("Content-Type", "application/octet-stream").
 		Put(url)
-
 	if err != nil {
 		return err
 	}
@@ -81,9 +80,7 @@ func (r *Request) VaultUploadBinaryFile(ctx context.Context, url string, encFile
 }
 
 func (r *Request) VaultConfirmCreateBinary(ctx context.Context, path string, id int) error {
-	var (
-		resErrs map[string]string
-	)
+	var resErrs map[string]string
 
 	body := models.VaultConfirmBinaryUploadReq{
 		VaultID: id,

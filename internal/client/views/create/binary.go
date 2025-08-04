@@ -16,12 +16,11 @@ import (
 )
 
 type BinaryModel struct {
-	help             *help.Auth
-	actions          *actions.Actions
-	log              *zap.Logger
-	form             *form.Form
-	path             string
-	isOpenFilePeeker bool
+	help    *help.Auth
+	actions *actions.Actions
+	log     *zap.Logger
+	form    *form.Form
+	path    string
 }
 
 const (
@@ -32,12 +31,6 @@ const (
 )
 
 func NewBinary(acts *actions.Actions, log *zap.Logger) tea.Model {
-	const (
-		cardMaxLen = 19
-		expMaxLen  = 5
-		cvvMaxLen  = 3
-	)
-
 	inputs := []components.TextInput{
 		components.NewTextInput(components.TextInputOpts{
 			Placeholder: "Name",
@@ -63,7 +56,7 @@ func NewBinary(acts *actions.Actions, log *zap.Logger) tea.Model {
 
 	return &BinaryModel{
 		actions: acts,
-		form: form.NewForm(form.FormOpts{
+		form: form.NewForm(form.Opts{
 			Inputs:  inputs,
 			Buttons: buttons,
 			Up:      h.Keys.Up,

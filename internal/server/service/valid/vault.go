@@ -32,7 +32,7 @@ func VaultCreateItem(item *models.VaultItem) error {
 	)
 }
 
-func ValidConfirmBinaryUpload(req *models.VaultConfirmBinaryUploadReq) error {
+func ConfirmBinaryUpload(req *models.VaultConfirmBinaryUploadReq) error {
 	return validation.ValidateStruct(req,
 		validation.Field(&req.VaultID, validation.Required),
 		validation.Field(&req.Path, validation.Required),

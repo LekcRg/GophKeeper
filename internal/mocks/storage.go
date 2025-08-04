@@ -37,12 +37,12 @@ func (_m *MockStorage) EXPECT() *MockStorage_Expecter {
 	return &MockStorage_Expecter{mock: &_m.Mock}
 }
 
-// GenPresignedGetUrl provides a mock function for the type MockStorage
-func (_mock *MockStorage) GenPresignedGetUrl(ctx context.Context, filePath string) (string, error) {
+// GenPresignedGetURL provides a mock function for the type MockStorage
+func (_mock *MockStorage) GenPresignedGetURL(ctx context.Context, filePath string) (string, error) {
 	ret := _mock.Called(ctx, filePath)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GenPresignedGetUrl")
+		panic("no return value specified for GenPresignedGetURL")
 	}
 
 	var r0 string
@@ -63,41 +63,41 @@ func (_mock *MockStorage) GenPresignedGetUrl(ctx context.Context, filePath strin
 	return r0, r1
 }
 
-// MockStorage_GenPresignedGetUrl_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GenPresignedGetUrl'
-type MockStorage_GenPresignedGetUrl_Call struct {
+// MockStorage_GenPresignedGetURL_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GenPresignedGetURL'
+type MockStorage_GenPresignedGetURL_Call struct {
 	*mock.Call
 }
 
-// GenPresignedGetUrl is a helper method to define mock.On call
+// GenPresignedGetURL is a helper method to define mock.On call
 //   - ctx
 //   - filePath
-func (_e *MockStorage_Expecter) GenPresignedGetUrl(ctx interface{}, filePath interface{}) *MockStorage_GenPresignedGetUrl_Call {
-	return &MockStorage_GenPresignedGetUrl_Call{Call: _e.mock.On("GenPresignedGetUrl", ctx, filePath)}
+func (_e *MockStorage_Expecter) GenPresignedGetURL(ctx interface{}, filePath interface{}) *MockStorage_GenPresignedGetURL_Call {
+	return &MockStorage_GenPresignedGetURL_Call{Call: _e.mock.On("GenPresignedGetURL", ctx, filePath)}
 }
 
-func (_c *MockStorage_GenPresignedGetUrl_Call) Run(run func(ctx context.Context, filePath string)) *MockStorage_GenPresignedGetUrl_Call {
+func (_c *MockStorage_GenPresignedGetURL_Call) Run(run func(ctx context.Context, filePath string)) *MockStorage_GenPresignedGetURL_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(string))
 	})
 	return _c
 }
 
-func (_c *MockStorage_GenPresignedGetUrl_Call) Return(s string, err error) *MockStorage_GenPresignedGetUrl_Call {
+func (_c *MockStorage_GenPresignedGetURL_Call) Return(s string, err error) *MockStorage_GenPresignedGetURL_Call {
 	_c.Call.Return(s, err)
 	return _c
 }
 
-func (_c *MockStorage_GenPresignedGetUrl_Call) RunAndReturn(run func(ctx context.Context, filePath string) (string, error)) *MockStorage_GenPresignedGetUrl_Call {
+func (_c *MockStorage_GenPresignedGetURL_Call) RunAndReturn(run func(ctx context.Context, filePath string) (string, error)) *MockStorage_GenPresignedGetURL_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// GenUploadPresignedUrl provides a mock function for the type MockStorage
-func (_mock *MockStorage) GenUploadPresignedUrl(ctx context.Context, userID int) (string, string, error) {
+// GenUploadPresignedURL provides a mock function for the type MockStorage
+func (_mock *MockStorage) GenUploadPresignedURL(ctx context.Context, userID int) (string, string, error) {
 	ret := _mock.Called(ctx, userID)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GenUploadPresignedUrl")
+		panic("no return value specified for GenUploadPresignedURL")
 	}
 
 	var r0 string
@@ -124,31 +124,31 @@ func (_mock *MockStorage) GenUploadPresignedUrl(ctx context.Context, userID int)
 	return r0, r1, r2
 }
 
-// MockStorage_GenUploadPresignedUrl_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GenUploadPresignedUrl'
-type MockStorage_GenUploadPresignedUrl_Call struct {
+// MockStorage_GenUploadPresignedURL_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GenUploadPresignedURL'
+type MockStorage_GenUploadPresignedURL_Call struct {
 	*mock.Call
 }
 
-// GenUploadPresignedUrl is a helper method to define mock.On call
+// GenUploadPresignedURL is a helper method to define mock.On call
 //   - ctx
 //   - userID
-func (_e *MockStorage_Expecter) GenUploadPresignedUrl(ctx interface{}, userID interface{}) *MockStorage_GenUploadPresignedUrl_Call {
-	return &MockStorage_GenUploadPresignedUrl_Call{Call: _e.mock.On("GenUploadPresignedUrl", ctx, userID)}
+func (_e *MockStorage_Expecter) GenUploadPresignedURL(ctx interface{}, userID interface{}) *MockStorage_GenUploadPresignedURL_Call {
+	return &MockStorage_GenUploadPresignedURL_Call{Call: _e.mock.On("GenUploadPresignedURL", ctx, userID)}
 }
 
-func (_c *MockStorage_GenUploadPresignedUrl_Call) Run(run func(ctx context.Context, userID int)) *MockStorage_GenUploadPresignedUrl_Call {
+func (_c *MockStorage_GenUploadPresignedURL_Call) Run(run func(ctx context.Context, userID int)) *MockStorage_GenUploadPresignedURL_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(int))
 	})
 	return _c
 }
 
-func (_c *MockStorage_GenUploadPresignedUrl_Call) Return(url string, path string, err error) *MockStorage_GenUploadPresignedUrl_Call {
+func (_c *MockStorage_GenUploadPresignedURL_Call) Return(url string, path string, err error) *MockStorage_GenUploadPresignedURL_Call {
 	_c.Call.Return(url, path, err)
 	return _c
 }
 
-func (_c *MockStorage_GenUploadPresignedUrl_Call) RunAndReturn(run func(ctx context.Context, userID int) (string, string, error)) *MockStorage_GenUploadPresignedUrl_Call {
+func (_c *MockStorage_GenUploadPresignedURL_Call) RunAndReturn(run func(ctx context.Context, userID int) (string, string, error)) *MockStorage_GenUploadPresignedURL_Call {
 	_c.Call.Return(run)
 	return _c
 }

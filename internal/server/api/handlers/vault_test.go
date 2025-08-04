@@ -168,7 +168,6 @@ func TestGetAllItems(t *testing.T) {
 		ctx      context.Context
 		name     string
 		wantErrs []string
-		svcRes   models.VaultItem
 		wantCode int
 		id       int
 		mockSvc  bool
@@ -246,7 +245,6 @@ func TestCreateBinary(t *testing.T) {
 		bodyStr  string
 		encData  []byte
 		wantErrs []string
-		svcRes   models.VaultBinaryItemUploadRes
 		id       int
 		wantCode int
 		mockSvc  bool
@@ -468,7 +466,6 @@ func TestGetBinaryFileURL(t *testing.T) {
 		name     string
 		vaultID  string
 		wantErrs []string
-		svcRes   models.VaultItem
 		wantCode int
 		userID   int
 		mockSvc  bool
@@ -566,15 +563,15 @@ func getVaultHandlers(t *testing.T) (*VaultHandlers, *MockVaultService) {
 func checkSliceErrs(t *testing.T, expected []string, body []byte) {
 	t.Helper()
 
-	var errs map[string]string
-	err := json.Unmarshal(body, &errs)
+	var er map[string]string
+	err := json.Unmarshal(body, &er)
 	require.NoError(t, err)
 
 	for _, errName := range expected {
-		assert.NotEmpty(t, errs[errName])
+		assert.NotEmpty(t, er[errName])
 	}
 
-	for key, val := range errs {
+	for key, val := range er {
 		if val != "" && !slices.Contains(expected, key) {
 			t.Errorf("error {%s: %s} not contains in expected errs slice %v", key, val, expected)
 		}

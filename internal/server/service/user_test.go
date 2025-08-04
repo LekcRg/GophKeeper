@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
-	"math/rand"
 	"testing"
 
 	"github.com/LekcRg/GophKeeper/internal/config"
@@ -90,7 +89,7 @@ func TestRegister(t *testing.T) {
 			repo := mocks.NewMockUserRepo(t)
 			us := NewUserService(repo, cfg)
 
-			userID := rand.Int()
+			userID := 12
 			if !tt.doNotMock {
 				repo.EXPECT().
 					CreateUser(mock.Anything, mock.Anything).
@@ -121,7 +120,6 @@ func TestUpdateAPIKey(t *testing.T) {
 	require.NoError(t, err)
 
 	type test struct {
-		mockErr         error
 		GetUserErr      error
 		UpdateKeyErr    error
 		isErr           error

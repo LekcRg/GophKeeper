@@ -24,7 +24,7 @@ func serveHTTPWithCtx(ctx context.Context, handler http.HandlerFunc, opts serveH
 		target = opts.target
 	}
 
-	var body io.Reader = nil
+	var body io.Reader
 	if opts.body != nil {
 		body = opts.body
 	}
@@ -33,7 +33,7 @@ func serveHTTPWithCtx(ctx context.Context, handler http.HandlerFunc, opts serveH
 	req = req.WithContext(ctx)
 	res := httptest.NewRecorder()
 
-	h := http.HandlerFunc(handler)
+	h := handler
 	h.ServeHTTP(res, req)
 
 	return res

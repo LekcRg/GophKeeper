@@ -33,7 +33,7 @@ func New(cfg config.Storage) (Storage, error) {
 	return s, nil
 }
 
-func (s *storage) GenUploadPresignedUrl(
+func (s *storage) GenUploadPresignedURL(
 	ctx context.Context, userID int,
 ) (url, path string, err error) {
 	filename := uuid.New()
@@ -52,7 +52,7 @@ func (s *storage) GenUploadPresignedUrl(
 	return presigned.String(), filepath, nil
 }
 
-func (s *storage) GenPresignedGetUrl(
+func (s *storage) GenPresignedGetURL(
 	ctx context.Context, filePath string,
 ) (string, error) {
 	presigned, err := s.client.PresignedGetObject(
@@ -71,9 +71,5 @@ func (s *storage) GenPresignedGetUrl(
 
 func (s *storage) IsContainsFile(ctx context.Context, path string) bool {
 	_, err := s.client.StatObject(ctx, s.config.Bucket, path, minio.StatObjectOptions{})
-	if err != nil {
-		return false
-	}
-
-	return true
+	return err == nil
 }

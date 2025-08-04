@@ -10,12 +10,9 @@ import (
 )
 
 type filePicker struct {
-	filepicker   filepicker.Model
-	err          error
-	selectedFile string
+	filepicker filepicker.Model
+	err        error
 }
-
-type clearErrorMsg struct{}
 
 func NewFilePicker() tea.Model {
 	fp := filepicker.New()

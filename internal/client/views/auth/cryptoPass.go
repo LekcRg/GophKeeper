@@ -26,7 +26,6 @@ func NewCryptoPass(acts *actions.Actions) tea.Model {
 			IsPassword:  true,
 			Name:        cryptoPassInputName,
 			IsFocus:     true,
-			Value:       "123qwe!@#QWE",
 		}),
 	}
 
@@ -40,7 +39,7 @@ func NewCryptoPass(acts *actions.Actions) tea.Model {
 	h := help.NewAuth()
 
 	return &CryptoPassModel{
-		form: form.NewForm(form.FormOpts{
+		form: form.NewForm(form.Opts{
 			Inputs:  inputs,
 			Buttons: buttons,
 			Up:      h.Keys.Up,

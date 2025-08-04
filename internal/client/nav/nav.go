@@ -90,7 +90,7 @@ func (n *Navigation) IsOnButton() bool {
 }
 
 func (n *Navigation) IsOnInputs() bool {
-	return n.focusIndex <= len(n.Inputs)-1
+	return n.focusIndex < len(n.Inputs)
 }
 
 func (n *Navigation) GetCurrentButton() *components.Button {

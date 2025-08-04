@@ -265,7 +265,7 @@ func TestCreateBinary(t *testing.T) {
 
 			if !tt.doNotMockStorage {
 				st.EXPECT().
-					GenUploadPresignedUrl(mock.Anything, tt.req.UserID).
+					GenUploadPresignedURL(mock.Anything, tt.req.UserID).
 					Return(mockURL, mockPath, tt.storageErr)
 			}
 
@@ -476,7 +476,7 @@ func TestGetBinaryFileURL(t *testing.T) {
 
 			if !tt.doNotMockStorage {
 				st.EXPECT().
-					GenPresignedGetUrl(mock.Anything, tt.item.BinaryPath).
+					GenPresignedGetURL(mock.Anything, tt.item.BinaryPath).
 					Return(presignURL, tt.storageErr)
 			}
 

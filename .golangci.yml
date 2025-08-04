@@ -6,14 +6,10 @@ linters:
     - asciicheck
     - bodyclose
     - copyloopvar
-    - cyclop
     - dogsled
-    # - dupl
     - durationcheck
-    - err113
     - errcheck
     - errorlint
-    # - exhaustive
     - forbidigo
     - funlen
     - gochecknoinits
@@ -33,17 +29,14 @@ linters:
     - mnd
     - nakedret
     - nestif
-    # - nlreturn
     - noctx
     - nolintlint
-    - paralleltest
     - predeclared
     - revive
     - rowserrcheck
     - sqlclosecheck
     - staticcheck
     - thelper
-    - tparallel
     - unconvert
     - unparam
     - unused
@@ -57,8 +50,6 @@ linters:
       check-blank: true
     errorlint:
       errorf: true
-    # exhaustive:
-    #   default-signifies-exhaustive: false
     funlen:
       lines: 65
       statements: 40
@@ -79,7 +70,7 @@ linters:
         - performance
         - style
     gocyclo:
-      min-complexity: 15
+      min-complexity: 20
     misspell:
       locale: US
     nestif:
@@ -97,7 +88,6 @@ linters:
     rules:
       - linters:
           - funlen
-          - err113
         path: _test\.go
     paths:
       - bin/

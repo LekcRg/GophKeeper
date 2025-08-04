@@ -15,7 +15,7 @@ func (m *Field) Init() tea.Cmd {
 	return nil
 }
 
-func (m *Field) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *Field) Update(_ tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 

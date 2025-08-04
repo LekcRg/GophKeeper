@@ -44,41 +44,41 @@ const (
 )
 
 func NewTextInput(opts TextInputOpts) TextInput {
-	ti := TextInput{
+	m := TextInput{
 		Model: textinput.New(),
 		Name:  opts.Name,
 		Valid: opts.Valid,
 		Type:  opts.Type,
 	}
-	ti.Cursor.Style = styles.CursorStyle
+	m.Cursor.Style = styles.CursorStyle
 
 	if opts.Value != "" {
-		ti.SetValue(opts.Value)
+		m.SetValue(opts.Value)
 	}
 
 	if opts.CharLimit > 0 {
-		ti.CharLimit = opts.CharLimit
+		m.CharLimit = opts.CharLimit
 	} else {
-		ti.CharLimit = textCharLimit
+		m.CharLimit = textCharLimit
 	}
 
-	ti.Placeholder = opts.Placeholder
+	m.Placeholder = opts.Placeholder
 
-	ti.Width = textWidth
+	m.Width = textWidth
 	if opts.Width > 0 {
-		ti.Width = opts.Width
+		m.Width = opts.Width
 	}
 
 	if opts.IsFocus {
-		ti.Focus()
+		m.Focus()
 	}
 
 	if opts.IsPassword {
-		ti.EchoMode = textinput.EchoPassword
-		ti.EchoCharacter = textPasswordEchoChar
+		m.EchoMode = textinput.EchoPassword
+		m.EchoCharacter = textPasswordEchoChar
 	}
 
-	return ti
+	return m
 }
 
 func digitsOnly(s string) []rune {
@@ -87,7 +87,7 @@ func digitsOnly(s string) []rune {
 }
 
 func (m *TextInput) setInputValue(value string) {
-	m.SetValue(string(value))
+	m.SetValue(value)
 	m.SetCursor(len(value))
 }
 
@@ -163,36 +163,36 @@ func (m *TextInput) formatNums() {
 	}
 }
 
-func (ti *TextInput) format() {
-	switch ti.Type {
+func (m *TextInput) format() {
+	switch m.Type {
 	case InputTypeNums:
-		ti.formatNums()
+		m.formatNums()
 	case InputTypeCardNumber:
-		ti.formatCardNumber()
+		m.formatCardNumber()
 	case InputTypeCardExpire:
-		ti.formatCardExp()
+		m.formatCardExp()
 	}
 }
 
-func (ti *TextInput) Update(msg tea.Msg) tea.Cmd {
-	model, cmd := ti.Model.Update(msg)
-	ti.Model = model
+func (m *TextInput) Update(msg tea.Msg) tea.Cmd {
+	model, cmd := m.Model.Update(msg)
+	m.Model = model
 
-	if ti.Type != InputTypeText {
-		ti.format()
+	if m.Type != InputTypeText {
+		m.format()
 	}
 
 	return cmd
 }
 
-func (ti *TextInput) View() string {
-	if ti.Focused() {
-		ti.PromptStyle = styles.FocusedStyle
-		ti.TextStyle = styles.FocusedStyle
+func (m *TextInput) View() string {
+	if m.Focused() {
+		m.PromptStyle = styles.FocusedStyle
+		m.TextStyle = styles.FocusedStyle
 	} else {
-		ti.PromptStyle = styles.NoStyle
-		ti.TextStyle = styles.NoStyle
+		m.PromptStyle = styles.NoStyle
+		m.TextStyle = styles.NoStyle
 	}
 
-	return ti.Model.View()
+	return m.Model.View()
 }

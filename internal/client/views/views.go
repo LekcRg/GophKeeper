@@ -29,8 +29,8 @@ func New(logger *zap.Logger, cfg *config.ClientConfig) *Views {
 	}
 
 	request := req.New(cfg)
-	state := state.New(request, cfg)
-	acts := actions.New(request, logger, cfg, state)
+	st := state.New(request, cfg)
+	acts := actions.New(request, logger, cfg, st)
 
 	currentView := router.SelectAuthView
 	if cfg.Key != "" {
@@ -43,13 +43,13 @@ func New(logger *zap.Logger, cfg *config.ClientConfig) *Views {
 		router.TokenAuthView:       auth.NewKey(acts),
 		router.UpdateTokenView:     auth.NewUpdateKey(acts),
 		router.CryptoPassView:      auth.NewCryptoPass(acts),
-		router.ListView:            NewList(logger, state),
+		router.ListView:            NewList(logger, st),
 		router.SelectVaultType:     create.NewSelectType(),
 		router.CreateVaultPassword: create.NewPassword(acts, logger),
 		router.CreateVaultNote:     create.NewNote(acts, logger),
 		router.CreateVaultCard:     create.NewCard(acts, logger),
 		router.CreateVaultBinary:   create.NewBinary(acts, logger),
-		router.Detail:              detail.NewDetail(state, logger, acts),
+		router.Detail:              detail.NewDetail(st, logger, acts),
 		router.FilePicker:          create.NewFilePicker(),
 	}
 
@@ -57,7 +57,7 @@ func New(logger *zap.Logger, cfg *config.ClientConfig) *Views {
 		router:  *router.NewViewRouter(currentView, v),
 		actions: acts,
 		log:     logger,
-		state:   state,
+		state:   st,
 	}
 }
 

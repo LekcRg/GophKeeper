@@ -8,7 +8,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type DetailModel struct {
+type Detail struct {
 	state   *state.State
 	view    tea.Model
 	log     *zap.Logger
@@ -16,14 +16,14 @@ type DetailModel struct {
 }
 
 func NewDetail(st *state.State, log *zap.Logger, acts *actions.Actions) tea.Model {
-	return &DetailModel{
+	return &Detail{
 		state:   st,
 		log:     log,
 		actions: acts,
 	}
 }
 
-func (m *DetailModel) Init() tea.Cmd {
+func (m *Detail) Init() tea.Cmd {
 	item, err := m.state.GetActiveItem()
 	if err != nil {
 		m.log.Error("detail get item error", zap.Error(err))
@@ -46,14 +46,14 @@ func (m *DetailModel) Init() tea.Cmd {
 	return func() tea.Msg { return "" }
 }
 
-func (m *DetailModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *Detail) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	m.view, cmd = m.view.Update(msg)
 
 	return m, cmd
 }
 
-func (m *DetailModel) View() string {
+func (m *Detail) View() string {
 	if m.view == nil {
 		return "\nError retrieving the active vaul item, press ESC to back"
 	}

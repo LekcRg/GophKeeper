@@ -68,19 +68,22 @@ func (a *Actions) CreateBinaryVault(ctx context.Context, name, path string) (mod
 	return res.Item, nil
 }
 
-func (a *Actions) readBinaryFile(path string) ([]byte, os.FileInfo, error) {
-	file, err := os.OpenFile(path, os.O_RDONLY, 0o600)
+func (a *Actions) readBinaryFile(path string) (content []byte, info os.FileInfo, err error) {
+	var filePerm os.FileMode = 0o600
+
+	file, err := os.OpenFile(path, os.O_RDONLY, filePerm)
 	if err != nil {
 		return nil, nil, err
 	}
+
 	defer file.Close()
 
-	content, err := io.ReadAll(file)
+	content, err = io.ReadAll(file)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	info, err := file.Stat()
+	info, err = file.Stat()
 	if err != nil {
 		return nil, nil, err
 	}

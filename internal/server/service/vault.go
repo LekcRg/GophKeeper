@@ -68,7 +68,7 @@ func (vs *VaultService) CreateBinary(ctx context.Context, item models.VaultItem)
 		return models.VaultBinaryItemUploadRes{}, err
 	}
 
-	url, path, err := vs.storage.GenUploadPresignedUrl(ctx, item.UserID)
+	url, path, err := vs.storage.GenUploadPresignedURL(ctx, item.UserID)
 	if err != nil {
 		return models.VaultBinaryItemUploadRes{}, err
 	}
@@ -84,7 +84,7 @@ func (vs *VaultService) CreateBinary(ctx context.Context, item models.VaultItem)
 func (vs *VaultService) ConfirmBinaryUpload(
 	ctx context.Context, req models.VaultConfirmBinaryUploadReq,
 ) error {
-	err := valid.ValidConfirmBinaryUpload(&req)
+	err := valid.ConfirmBinaryUpload(&req)
 	if err != nil {
 		return err
 	}
@@ -108,7 +108,7 @@ func (vs *VaultService) GetBinaryFileURL(
 		return "", errs.ErrInvalidUserBinary
 	}
 
-	url, err := vs.storage.GenPresignedGetUrl(ctx, item.BinaryPath)
+	url, err := vs.storage.GenPresignedGetURL(ctx, item.BinaryPath)
 	if err != nil {
 		return "", err
 	}

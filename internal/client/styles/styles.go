@@ -24,6 +24,7 @@ var (
 	FieldLabel = lipgloss.NewStyle().Bold(true).Foreground(FocusColor)
 )
 
+//nolint:mnd // styles
 var (
 	SuccessTitle = lipgloss.NewStyle().
 			Foreground(Green).
@@ -48,15 +49,15 @@ func GetTableStyles() table.Styles {
 		BorderBottom(true).
 		Bold(false)
 	s.Selected = s.Selected.
-		Foreground(lipgloss.Color(FocusColorText)).
+		Foreground(FocusColorText).
 		Background(FocusColor).
 		Bold(false)
 
 	return s
 }
 
-func GetTextareaStyles() (textarea.Style, textarea.Style) {
-	focused := textarea.Style{
+func GetTextareaStyles() (focused, blurred textarea.Style) {
+	focused = textarea.Style{
 		Base:             NoStyle,
 		CursorLine:       FocusedStyle,
 		CursorLineNumber: FocusedStyle,
@@ -66,7 +67,7 @@ func GetTextareaStyles() (textarea.Style, textarea.Style) {
 		Prompt:           NoStyle,
 		Text:             NoStyle,
 	}
-	blurred := textarea.Style{
+	blurred = textarea.Style{
 		Base:             BlurredStyle,
 		CursorLine:       BlurredStyle,
 		CursorLineNumber: BlurredStyle,
