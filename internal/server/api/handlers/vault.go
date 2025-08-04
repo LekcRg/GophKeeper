@@ -243,7 +243,7 @@ func (vh *VaultHandlers) ConfirmBinaryUpload(w http.ResponseWriter, r *http.Requ
 // @Tags         Vault
 // @Produce      json
 // @Param        id   path      string  true  "Binary ID"
-// @Success      200 {object} models.ResponseMessage
+// @Success      200 {object} models.GetBinaryFileURLRes
 // @Failure      400 {object} models.ResponseError
 // @Failure      401 {object} models.ResponseError
 // @Failure      500 {object} models.ResponseError
@@ -262,14 +262,16 @@ func (vh *VaultHandlers) GetBinaryFileURL(w http.ResponseWriter, r *http.Request
 
 	vaultID, err := strconv.Atoi(vaultIDStr)
 	if err != nil {
-		vh.resp.Error(w, http.StatusBadRequest, "Ivalid ID")
+		vh.resp.Error(w, http.StatusBadRequest, "Invalid ID")
+		return
 	}
 
-	// vh.log.Info("got resp", zap.Int("user id", userID), zap.Int("vault id", vaultID))
 	url, err := vh.service.GetBinaryFileURL(r.Context(), userID, vaultID)
 	if err != nil {
 		if errors.Is(err, errs.ErrInvalidUserBinary) {
 			vh.resp.Error(w, http.StatusBadRequest, "Bad request")
+
+			return
 		}
 
 		vh.log.Error("GetBinaryFileURL service error", zap.Error(err))

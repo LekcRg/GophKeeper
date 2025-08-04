@@ -99,7 +99,7 @@ func TestRegister(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			uh, svc := getHandlers(t)
+			uh, svc := getUserHandlers(t)
 			userReqRunTest(t, tt, svc, uh.Register)
 		})
 	}
@@ -162,7 +162,7 @@ func TestAPIKey(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			uh, svc := getHandlers(t)
+			uh, svc := getUserHandlers(t)
 			userReqRunTest(t, tt, svc, uh.APIKey)
 		})
 	}
@@ -286,7 +286,7 @@ func TestChangePassword(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			uh, svc := getHandlers(t)
+			uh, svc := getUserHandlers(t)
 			if tt.mockSetup != nil {
 				tt.mockSetup(tt, svc)
 			}
@@ -371,18 +371,15 @@ func TestGetCryproParams(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			uh, svc := getHandlers(t)
+			uh, svc := getUserHandlers(t)
 
 			if tt.svcMock {
 				svc.EXPECT().GetCryptoParams(tt.ctx, tt.id).Return(tt.svcRes, tt.svcErr)
 			}
 
-			req := httptest.NewRequest("GET", "/", nil)
-			req = req.WithContext(tt.ctx)
-			res := httptest.NewRecorder()
-
-			handler := http.HandlerFunc(uh.GetCryptoParams)
-			handler.ServeHTTP(res, req)
+			res := serveHTTPWithCtx(tt.ctx, uh.GetCryptoParams, serveHTTPOpts{
+				method: "GET",
+			})
 
 			assert.Equal(t, tt.wantCode, res.Code)
 
@@ -410,7 +407,7 @@ func compareErrs(t *testing.T, wantErrs, resErrs map[string]string) {
 	}
 }
 
-func getHandlers(t *testing.T) (*UserHandlers, *MockUserService) {
+func getUserHandlers(t *testing.T) (*UserHandlers, *MockUserService) {
 	t.Helper()
 
 	svc := NewMockUserService(t)
