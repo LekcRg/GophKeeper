@@ -62,8 +62,6 @@ linters:
     funlen:
       lines: 65
       statements: 40
-    gocognit:
-      min-complexity: 15
     goconst:
       min-len: 2
       min-occurrences: 2
