@@ -466,11 +466,11 @@ func TestGetBinaryFileURL(t *testing.T) {
 		svcErr   error
 		ctx      context.Context
 		name     string
+		vaultID  string
 		wantErrs []string
 		svcRes   models.VaultItem
 		wantCode int
 		userID   int
-		vaultID  string
 		mockSvc  bool
 	}
 

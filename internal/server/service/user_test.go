@@ -122,14 +122,14 @@ func TestUpdateAPIKey(t *testing.T) {
 
 	type test struct {
 		mockErr         error
-		req             models.UserLogin
-		name            string
-		doNotMock       bool
-		doNotMockUpdate bool
 		GetUserErr      error
 		UpdateKeyErr    error
 		isErr           error
 		asErr           any
+		req             models.UserLogin
+		name            string
+		doNotMock       bool
+		doNotMockUpdate bool
 	}
 
 	errInternal := errors.New("internal")
@@ -351,10 +351,10 @@ func TestChangePassword(t *testing.T) {
 
 func TestCryptoParams(t *testing.T) {
 	type test struct {
+		svcErr  error
 		name    string
 		id      int
 		wantErr bool
-		svcErr  error
 	}
 
 	tests := []test{

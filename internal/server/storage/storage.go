@@ -11,12 +11,12 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
-type Storage struct {
+type storage struct {
 	client *minio.Client
 	config config.Storage
 }
 
-func New(cfg config.Storage) (*Storage, error) {
+func New(cfg config.Storage) (Storage, error) {
 	cl, err := minio.New(cfg.Endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(cfg.User, cfg.Password, ""),
 		Secure: cfg.Secure,
@@ -25,7 +25,7 @@ func New(cfg config.Storage) (*Storage, error) {
 		return nil, err
 	}
 
-	s := &Storage{
+	s := &storage{
 		config: cfg,
 		client: cl,
 	}
@@ -33,7 +33,7 @@ func New(cfg config.Storage) (*Storage, error) {
 	return s, nil
 }
 
-func (s *Storage) GenUploadPresignedUrl(
+func (s *storage) GenUploadPresignedUrl(
 	ctx context.Context, userID int,
 ) (url, path string, err error) {
 	filename := uuid.New()
@@ -52,7 +52,7 @@ func (s *Storage) GenUploadPresignedUrl(
 	return presigned.String(), filepath, nil
 }
 
-func (s *Storage) GenPresignedGetUrl(
+func (s *storage) GenPresignedGetUrl(
 	ctx context.Context, filePath string,
 ) (string, error) {
 	presigned, err := s.client.PresignedGetObject(
@@ -69,7 +69,7 @@ func (s *Storage) GenPresignedGetUrl(
 	return presigned.String(), nil
 }
 
-func (s *Storage) IsContainsFile(ctx context.Context, path string) bool {
+func (s *storage) IsContainsFile(ctx context.Context, path string) bool {
 	_, err := s.client.StatObject(ctx, s.config.Bucket, path, minio.StatObjectOptions{})
 	if err != nil {
 		return false

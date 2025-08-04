@@ -27,7 +27,7 @@ type Server struct {
 	Config  *config.Config
 	http    *http.Server
 	db      *repository.Repository
-	storage *storage.Storage
+	storage storage.Storage
 }
 
 var ErrLoggerIsNil = errors.New("logger is nil")

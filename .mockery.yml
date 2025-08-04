@@ -17,4 +17,9 @@ packages:
       pkgname: "mocks"
       dir: "internal/mocks"
       filename: "{{.SrcPackageName}}.go"
+  github.com/LekcRg/GophKeeper/internal/server/storage:
+    config:
+      pkgname: "mocks"
+      dir: "internal/mocks"
+      filename: "{{.SrcPackageName}}.go"
   github.com/LekcRg/GophKeeper/internal/server/api/handlers:

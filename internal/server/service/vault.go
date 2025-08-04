@@ -15,11 +15,11 @@ import (
 type VaultService struct {
 	repo    repository.VaultRepo
 	config  *config.Config
-	storage *storage.Storage
+	storage storage.Storage
 }
 
 func NewVaultService(
-	vr repository.VaultRepo, cfg *config.Config, st *storage.Storage,
+	vr repository.VaultRepo, cfg *config.Config, st storage.Storage,
 ) *VaultService {
 	return &VaultService{
 		repo:    vr,
