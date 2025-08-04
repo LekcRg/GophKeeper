@@ -18,13 +18,13 @@ type BinaryOpts struct {
 type DetailModel struct {
 	help       *help.Auth
 	helpBinary *help.BinaryDetail
-	fields     []Field
-	error      string
 	actions    *actions.Actions
+	error      string
 	path       string
-	id         int
-	binaryOpts BinaryOpts
 	savedPath  string
+	fields     []Field
+	binaryOpts BinaryOpts
+	id         int
 }
 
 func NewDetail(field []Field, acts *actions.Actions, binaryOpts BinaryOpts) tea.Model {

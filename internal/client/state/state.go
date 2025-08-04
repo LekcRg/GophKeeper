@@ -16,12 +16,12 @@ import (
 )
 
 type State struct {
-	activeID  int
-	Vault     []models.VaultItem
 	req       *req.Request
 	config    *config.ClientConfig
+	Vault     []models.VaultItem
 	Table     []table.Row
 	CryptoKey []byte
+	activeID  int
 }
 
 func New(r *req.Request, cfg *config.ClientConfig) *State {

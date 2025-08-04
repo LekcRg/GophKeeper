@@ -20,8 +20,8 @@ type BinaryModel struct {
 	actions          *actions.Actions
 	log              *zap.Logger
 	form             *form.Form
-	isOpenFilePeeker bool
 	path             string
+	isOpenFilePeeker bool
 }
 
 const (

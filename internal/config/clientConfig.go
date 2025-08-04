@@ -15,9 +15,9 @@ type ClientConfig struct {
 	Key                string `yaml:"key"`
 	EncryptedTagString string `yaml:"encrypted_tag"`
 	SaltString         string `yaml:"salt"`
+	Folder             string
 	EnctyptedTag       []byte `yaml:"-"`
 	Salt               []byte `yaml:"-"`
-	Folder             string
 }
 
 const (

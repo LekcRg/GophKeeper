@@ -12,8 +12,8 @@ import (
 )
 
 type Storage struct {
-	config config.Storage
 	client *minio.Client
+	config config.Storage
 }
 
 func New(cfg config.Storage) (*Storage, error) {

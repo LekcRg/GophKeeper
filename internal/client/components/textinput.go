@@ -13,8 +13,8 @@ type TextInputOpts struct {
 	Placeholder string
 	Name        string
 	Value       string
-	Type        InputType
 	Valid       []validation.Rule
+	Type        InputType
 	CharLimit   int
 	Width       int
 	IsFocus     bool
@@ -23,9 +23,9 @@ type TextInputOpts struct {
 
 type TextInput struct {
 	Name  string
-	Type  InputType
 	Valid []validation.Rule
 	textinput.Model
+	Type InputType
 }
 
 type InputType int

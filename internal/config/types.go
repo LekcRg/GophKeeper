@@ -24,9 +24,9 @@ type Auth struct {
 
 type Config struct {
 	Postgres Postgres `yaml:"postgres"`
-	Storage  Storage  `yaml:"storage"`
 	Config   string   `env:"CONFIG" short:"c" long:"config" description:"Path to yaml config"`
 	Addr     string   `yaml:"address" env:"ADDRESS" short:"a" long:"addresss" description:"Address for HTTP server"`
+	Storage  Storage  `yaml:"storage"`
 	Auth     Auth     `yaml:"auth"`
 	IsDev    bool     `yaml:"is_dev" env:"IS_DEV" short:"d" long:"dev" description:"Dev mode"`
 }

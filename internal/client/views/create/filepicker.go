@@ -11,8 +11,8 @@ import (
 
 type filePicker struct {
 	filepicker   filepicker.Model
-	selectedFile string
 	err          error
+	selectedFile string
 }
 
 type clearErrorMsg struct{}
