@@ -1,0 +1,27 @@
+services:
+  postgres:
+    container_name: gophkeeper-pg
+    image: postgres:17-alpine
+    ports:
+      - 5432:5432
+    volumes:
+      - pg:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", $POSTGRES_USER, "-d", $POSTGRES_DB]
+      interval: 10s
+      timeout: 5s
+      start_period: 2s
+      retries: 5
+  minio:
+    container_name: gophkeeper-minio
+    image: minio/minio:latest
+    ports:
+      - 9000:9000
+      - 9090:9090
+    volumes:
+      - ~/minio/data:/data
+    command: server /data --console-address ":9090"
+    env_file: .env
+volumes:
+  pg:

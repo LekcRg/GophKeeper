@@ -1,0 +1,412 @@
+basePath: /
+definitions:
+  models.APIKeyRes:
+    properties:
+      key:
+        type: string
+    type: object
+  models.CryptoParamsRes:
+    properties:
+      encrypted_tag:
+        type: string
+      salt:
+        type: string
+    type: object
+  models.Response:
+    properties:
+      message:
+        type: string
+    type: object
+  models.ResponseError:
+    properties:
+      error:
+        type: string
+    type: object
+  models.ResponseMessage:
+    properties:
+      message:
+        type: string
+    type: object
+  models.UserChangePasswordReq:
+    properties:
+      current-password:
+        type: string
+      login:
+        type: string
+      new-password:
+        type: string
+    type: object
+  models.UserLogin:
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+    type: object
+  models.UserReq:
+    properties:
+      encrypted_tag:
+        type: string
+      login:
+        type: string
+      password:
+        type: string
+      salt:
+        type: string
+    type: object
+  models.VaultBinaryItemUploadReq:
+    properties:
+      encrypted_data:
+        type: string
+      name:
+        type: string
+    type: object
+  models.VaultBinaryItemUploadRes:
+    properties:
+      item:
+        $ref: '#/definitions/models.VaultItem'
+      path:
+        type: string
+      url:
+        type: string
+      vault_id:
+        type: integer
+    type: object
+  models.VaultConfirmBinaryUploadReq:
+    properties:
+      path:
+        type: string
+      vault_id:
+        type: integer
+    type: object
+  models.VaultCreateItemReq:
+    properties:
+      encrypted_data:
+        type: string
+      name:
+        type: string
+      type:
+        type: string
+    type: object
+  models.VaultItem:
+    properties:
+      created_at:
+        type: string
+      encrypted_data:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      type:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+info:
+  contact: {}
+  description: Gophkeeper password manager HTTP API
+  title: GophKeeper API
+  version: "1.0"
+paths:
+  /user/api-key:
+    post:
+      consumes:
+      - application/json
+      description: Create or update user API Key
+      parameters:
+      - description: Login and password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserLogin'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.APIKeyRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.UserLogin'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+      summary: API Key generation
+      tags:
+      - Users
+  /user/change-password:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Current password and new password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserChangePasswordReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.UserChangePasswordReq'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+      security:
+      - BearerAuth: []
+      summary: Change user password
+      tags:
+      - Users
+  /user/create:
+    post:
+      consumes:
+      - application/json
+      description: Register user and return API Key
+      parameters:
+      - description: Login and password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.APIKeyRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.UserReq'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/models.UserReq'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+      summary: Register user
+      tags:
+      - Users
+  /user/crypto-params:
+    get:
+      consumes:
+      - application/json
+      description: Get crypto params
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CryptoParamsRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.UserLogin'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/models.UserLogin'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+      security:
+      - BearerAuth: []
+      summary: Get crypto params
+      tags:
+      - Users
+  /vault:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new vault item (text, login, card, etc.) for the authenticated
+        user.
+      parameters:
+      - description: Vault item to create
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.VaultCreateItemReq'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.VaultItem'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.VaultItem'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+      security:
+      - BearerAuth: []
+      summary: Create vault item
+      tags:
+      - Vault
+  /vault/all:
+    get:
+      description: Returns all vault items belonging to the authenticated user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.VaultItem'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+      security:
+      - BearerAuth: []
+      summary: Get all vault items
+      tags:
+      - Vault
+  /vault/binary:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new vault item of type 'binary' and returns a pre-signed
+        URL for direct file upload.
+      parameters:
+      - description: Binary vault item metadata
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.VaultBinaryItemUploadReq'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.VaultBinaryItemUploadRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.VaultBinaryItemUploadRes'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+      security:
+      - BearerAuth: []
+      summary: Create binary vault item
+      tags:
+      - Vault
+  /vault/binary/{id}:
+    get:
+      description: Get binary file URL
+      parameters:
+      - description: Binary ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ResponseMessage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+      security:
+      - BearerAuth: []
+      summary: Get binary file URL
+      tags:
+      - Vault
+  /vault/binary/confirm:
+    post:
+      consumes:
+      - application/json
+      description: Confirms the successful upload of a binary file and finalizes the
+        vault item.
+      parameters:
+      - description: Binary upload confirmation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.VaultConfirmBinaryUploadReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ResponseMessage'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.VaultConfirmBinaryUploadReq'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ResponseError'
+      security:
+      - BearerAuth: []
+      summary: Confirm binary file upload
+      tags:
+      - Vault
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

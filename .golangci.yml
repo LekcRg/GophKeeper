@@ -1,0 +1,113 @@
+version: "2"
+
+linters:
+  default: none
+  enable:
+    - asciicheck
+    - bodyclose
+    - copyloopvar
+    - dogsled
+    - durationcheck
+    - errcheck
+    - errorlint
+    - forbidigo
+    - funlen
+    - gochecknoinits
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - godot
+    - godox
+    - gomodguard
+    - goprintffuncname
+    - gosec
+    - govet
+    - ineffassign
+    - makezero
+    - misspell
+    - mnd
+    - nakedret
+    - nestif
+    - noctx
+    - nolintlint
+    - predeclared
+    - revive
+    - rowserrcheck
+    - sqlclosecheck
+    - staticcheck
+    - thelper
+    - unconvert
+    - unparam
+    - unused
+    - whitespace
+    - wsl
+  settings:
+    dupl:
+      threshold: 100
+    errcheck:
+      check-type-assertions: true
+      check-blank: true
+    errorlint:
+      errorf: true
+    funlen:
+      lines: 65
+      statements: 40
+    goconst:
+      min-len: 2
+      min-occurrences: 2
+    gocritic:
+      disabled-checks:
+        - dupImport
+        - unnecessaryBlock
+        - hugeParam
+        - evalOrder
+        - singleCaseSwitch
+      enabled-tags:
+        - diagnostic
+        - experimental
+        - opinionated
+        - performance
+        - style
+    gocyclo:
+      min-complexity: 20
+    misspell:
+      locale: US
+    nestif:
+      min-complexity: 4
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - funlen
+        path: _test\.go
+    paths:
+      - bin/
+      - third_party$
+      - builtin$
+      - examples$
+
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+  settings:
+    gofumpt:
+      extra-rules: true
+  exclusions:
+    generated: lax
+    paths:
+      - bin/
+      - third_party$
+      - builtin$
+      - examples$

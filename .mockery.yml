@@ -1,0 +1,25 @@
+all: true
+dir: "{{.InterfaceDir}}"
+force-file-write: true
+formatter: goimports
+log-level: info
+structname: "{{.Mock}}{{.InterfaceName}}"
+filename: "{{.SrcPackageName}}_mock_test.go"
+pkgname: "{{.SrcPackageName}}"
+recursive: false
+require-template-schema-exists: true
+template: testify
+template-schema: "{{.Template}}.schema.json"
+build-tags: "mock"
+packages:
+  github.com/LekcRg/GophKeeper/internal/server/repository:
+    config:
+      pkgname: "mocks"
+      dir: "internal/mocks"
+      filename: "{{.SrcPackageName}}.go"
+  github.com/LekcRg/GophKeeper/internal/server/storage:
+    config:
+      pkgname: "mocks"
+      dir: "internal/mocks"
+      filename: "{{.SrcPackageName}}.go"
+  github.com/LekcRg/GophKeeper/internal/server/api/handlers:
