@@ -107,6 +107,8 @@ func (c *ClientConfig) updateConfigFile() error {
 		return err
 	}
 
+	c.Folder = path
+
 	var (
 		dirPerm  os.FileMode = 0o700
 		filePerm os.FileMode = 0o600
